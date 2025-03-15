@@ -237,3 +237,5 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     </Modal>
   );
 };
+
+export default BottomSheet;

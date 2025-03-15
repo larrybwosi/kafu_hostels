@@ -1,338 +1,35 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
   ScrollView,
-  Image,
   TouchableOpacity,
   TextInput,
-  FlatList,
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
 } from "react-native";
-import { BlurView } from "expo-blur";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInDown, FadeInRight } from "react-native-reanimated";
-
-interface Hostel {
-  id: string;
-  name: string;
-  type: string;
-  rooms: number;
-  roomCapacity: number;
-  capacity: number;
-  gender: string;
-  price: number;
-  distance: number;
-  rating: number;
-  amenities: string[];
-  imageUrl: string;
-  featured: boolean;
-  availability: string;
-}
-// Mock Data for Hostels
-const hostelData = [
-  {
-    id: "1",
-    name: "Oakwood Hall",
-    type: "Premium",
-    rooms: 120,
-    roomCapacity: 2,
-    capacity: 240,
-    gender: "Mixed",
-    price: 750,
-    distance: 0.5,
-    rating: 4.8,
-    amenities: ["WiFi", "Gym", "Laundry", "Study Room", "Kitchen"],
-    imageUrl:
-      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80",
-    featured: true,
-    availability: "High",
-  },
-  {
-    id: "2",
-    name: "Maple House",
-    type: "Standard",
-    rooms: 80,
-    roomCapacity: 4,
-    capacity: 320,
-    gender: "Female",
-    price: 550,
-    distance: 1.2,
-    rating: 4.5,
-    amenities: ["WiFi", "Laundry", "Common Room"],
-    imageUrl:
-      "https://images.unsplash.com/photo-1576495199011-eb94736d05d6?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80",
-    featured: true,
-    availability: "Medium",
-  },
-  {
-    id: "3",
-    name: "Pine Lodge",
-    type: "Economy",
-    rooms: 150,
-    roomCapacity: 3,
-    capacity: 450,
-    gender: "Male",
-    price: 450,
-    distance: 0.8,
-    rating: 4.2,
-    amenities: ["WiFi", "Vending Machines"],
-    imageUrl:
-      "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80",
-    featured: false,
-    availability: "Low",
-  },
-  {
-    id: "4",
-    name: "Cedar Heights",
-    type: "Premium",
-    rooms: 90,
-    roomCapacity: 2,
-    capacity: 180,
-    gender: "Mixed",
-    price: 800,
-    distance: 1.5,
-    rating: 4.9,
-    amenities: ["WiFi", "Gym", "Pool", "Study Rooms", "Cafe"],
-    imageUrl:
-      "https://images.unsplash.com/photo-1460317442991-0ec209397118?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80",
-    featured: true,
-    availability: "Low",
-  },
-  {
-    id: "5",
-    name: "Birch Dormitory",
-    type: "Standard",
-    rooms: 100,
-    roomCapacity: 2,
-    capacity: 200,
-    gender: "Female",
-    price: 600,
-    distance: 0.3,
-    rating: 4.6,
-    amenities: ["WiFi", "Study Areas", "Laundry"],
-    imageUrl:
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80",
-    featured: false,
-    availability: "High",
-  },
-  {
-    id: "6",
-    name: "Willow Residence",
-    type: "Economy",
-    rooms: 130,
-    roomCapacity: 4,
-    capacity: 520,
-    gender: "Male",
-    price: 400,
-    distance: 2.0,
-    rating: 4.0,
-    amenities: ["WiFi", "Basic Amenities"],
-    imageUrl:
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80",
-    featured: false,
-    availability: "Medium",
-  },
-];
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import FeaturedHostelCard from "@/components/feature-card";
+import HostelCard from "@/components/hostel-card";
+import { router } from "expo-router";
+import { useGetAllHostels } from "@/lib/actions";
 
 // Filter options
 const filterOptions = {
-  types: ["All", "Premium", "Standard", "Economy"],
-  gender: ["All", "Male", "Female", "Mixed"],
+  types: ["All", "On-campus", "Off-campus"], // Updated types
+  gender: ["All", "Male", "Female"], // Updated gender options
   roomCapacity: [1, 2, 3, 4],
   availability: ["High", "Medium", "Low"],
 };
 
-// Component for displaying availability tag
-const AvailabilityTag = ({ availability }: { availability: string }) => {
-  let bgColor = "";
-  let textColor = "text-white";
-
-  switch (availability) {
-    case "High":
-      bgColor = "bg-green-500";
-      break;
-    case "Medium":
-      bgColor = "bg-yellow-500";
-      break;
-    case "Low":
-      bgColor = "bg-red-500";
-      break;
-    default:
-      bgColor = "bg-gray-500";
-  }
-
-  return (
-    <View
-      className={`${bgColor} rounded-full px-2 py-1 absolute top-2 right-2`}
-    >
-      <Text className={`${textColor} text-xs font-medium`}>{availability}</Text>
-    </View>
-  );
-};
-
-interface HostelCardProps {
-  hostel: Hostel;
-  onPress: (hostel: Hostel) => void;
-}
-
-// Featured Hostel Card Component
-const FeaturedHostelCard = ({ hostel, onPress }: HostelCardProps) => {
-  return (
-    <Animated.View
-      entering={FadeInRight.delay(hostel.id * 100).duration(400)}
-      className="mr-4 w-72 rounded-xl overflow-hidden shadow-lg bg-white"
-    >
-      <TouchableOpacity onPress={() => onPress(hostel)} activeOpacity={0.9}>
-        <View className="relative">
-          <Image
-            source={{ uri: hostel.imageUrl }}
-            className="h-40 w-full"
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.8)"]}
-            className="absolute inset-0"
-          />
-          <View className="absolute bottom-0 left-0 p-3">
-            <Text className="text-white text-xl font-bold">{hostel.name}</Text>
-            <View className="flex-row items-center mt-1">
-              <MaterialIcons name="star" size={16} color="#FFD700" />
-              <Text className="text-white ml-1">{hostel.rating}</Text>
-              <View className="w-1 h-1 bg-white rounded-full mx-2" />
-              <Text className="text-white text-xs">{hostel.type}</Text>
-            </View>
-          </View>
-          <AvailabilityTag availability={hostel.availability} />
-          <View className="absolute top-2 left-2 bg-blue-500 rounded-full px-3 py-1">
-            <Text className="text-white text-xs font-bold">FEATURED</Text>
-          </View>
-        </View>
-
-        <View className="p-3">
-          <View className="flex-row justify-between mb-2">
-            <View className="flex-row items-center">
-              <FontAwesome5 name="building" size={12} color="#6B7280" />
-              <Text className="text-gray-600 text-xs ml-1">
-                {hostel.rooms} rooms
-              </Text>
-            </View>
-            <View className="flex-row items-center">
-              <FontAwesome5 name="users" size={12} color="#6B7280" />
-              <Text className="text-gray-600 text-xs ml-1">
-                {hostel.gender}
-              </Text>
-            </View>
-            <View className="flex-row items-center">
-              <FontAwesome5 name="user-friends" size={12} color="#6B7280" />
-              <Text className="text-gray-600 text-xs ml-1">
-                {hostel.roomCapacity}/room
-              </Text>
-            </View>
-          </View>
-
-          <View className="flex-row items-center justify-between">
-            <Text className="text-blue-600 font-bold">
-              ${hostel.price}/month
-            </Text>
-            <View className="flex-row items-center">
-              <FontAwesome5 name="walking" size={12} color="#6B7280" />
-              <Text className="text-gray-600 text-xs ml-1">
-                {hostel.distance} km to campus
-              </Text>
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
-
-interface HostelCardProps {
-  hostel: Hostel;
-  onPress: (hostel: Hostel) => void;
-}
-// Regular Hostel Card Component
-const HostelCard = ({ hostel, onPress }: HostelCardProps) => {
-  return (
-    <Animated.View
-      entering={FadeInDown.delay(hostel.id * 100).duration(400)}
-      className="mb-4 rounded-xl overflow-hidden shadow-lg bg-white"
-    >
-      <TouchableOpacity onPress={() => onPress(hostel)} activeOpacity={0.9}>
-        <View className="flex-row">
-          <View className="relative w-1/3">
-            <Image
-              source={{ uri: hostel.imageUrl }}
-              className="h-40 w-full"
-              resizeMode="cover"
-            />
-            <AvailabilityTag availability={hostel.availability} />
-          </View>
-
-          <View className="p-3 flex-1 justify-between">
-            <View>
-              <View className="flex-row justify-between items-center">
-                <Text className="text-lg font-bold text-gray-800">
-                  {hostel.name}
-                </Text>
-                <View className="flex-row items-center">
-                  <MaterialIcons name="star" size={16} color="#FFD700" />
-                  <Text className="ml-1">{hostel.rating}</Text>
-                </View>
-              </View>
-
-              <Text className="text-blue-500 text-xs font-medium mt-1">
-                {hostel.type}
-              </Text>
-
-              <View className="flex-row flex-wrap mt-2">
-                <View className="flex-row items-center mr-3 mb-1">
-                  <FontAwesome5 name="building" size={10} color="#6B7280" />
-                  <Text className="text-gray-600 text-xs ml-1">
-                    {hostel.rooms} rooms
-                  </Text>
-                </View>
-                <View className="flex-row items-center mr-3 mb-1">
-                  <FontAwesome5 name="users" size={10} color="#6B7280" />
-                  <Text className="text-gray-600 text-xs ml-1">
-                    {hostel.gender}
-                  </Text>
-                </View>
-                <View className="flex-row items-center mb-1">
-                  <FontAwesome5 name="user-friends" size={10} color="#6B7280" />
-                  <Text className="text-gray-600 text-xs ml-1">
-                    {hostel.roomCapacity}/room
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View className="flex-row items-center justify-between mt-2">
-              <Text className="text-blue-600 font-bold">
-                ${hostel.price}/month
-              </Text>
-              <View className="flex-row items-center">
-                <FontAwesome5 name="walking" size={10} color="#6B7280" />
-                <Text className="text-gray-600 text-xs ml-1">
-                  {hostel.distance} km
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-};
 interface FilterChipProps {
   label: string;
   selected: boolean;
   onPress: () => void;
 }
+
 // Filter Chip Component
 const FilterChip = ({ label, selected, onPress }: FilterChipProps) => {
   return (
@@ -355,67 +52,73 @@ const FilterChip = ({ label, selected, onPress }: FilterChipProps) => {
 
 // Main Hostels Component
 const CampusHostels = () => {
-  const [loading, setLoading] = useState(true);
+  const { data, loading: isLoading, error } = useGetAllHostels();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeType, setActiveType] = useState("All");
   const [activeGender, setActiveGender] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
-  const [filteredHostels, setFilteredHostels] = useState(hostelData);
+  const [filteredHostels, setFilteredHostels] = useState(data || []);
   const [sortBy, setSortBy] = useState("rating");
 
   // Featured hostels
-  const featuredHostels = hostelData.filter((hostel) => hostel.featured);
+  const featuredHostels = (data || []).filter((hostel) => hostel.featured);
 
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-  }, []);
+    if (!data) return;
 
-  useEffect(() => {
     // Filter hostels based on search query and active filters
-    let result = hostelData;
+    let result = data;
 
+    // Filter by search query (hostel name)
     if (searchQuery) {
       result = result.filter((hostel) =>
         hostel.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
+    // Filter by hostel type (e.g., "On-campus")
     if (activeType !== "All") {
       result = result.filter((hostel) => hostel.type === activeType);
     }
 
+    // Filter by gender (e.g., "male", "female")
     if (activeGender !== "All") {
-      result = result.filter((hostel) => hostel.gender === activeGender);
+      result = result.filter(
+        (hostel) => hostel.gender === activeGender.toLocaleLowerCase()
+      );
     }
 
     // Sort hostels
     switch (sortBy) {
       case "price-low":
-        result = result.sort((a, b) => a.price - b.price);
+        result = result.sort((a, b) => a.price - b.price); // Sort by price (low to high)
         break;
       case "price-high":
-        result = result.sort((a, b) => b.price - a.price);
+        result = result.sort((a, b) => b.price - a.price); // Sort by price (high to low)
         break;
       case "rating":
-        result = result.sort((a, b) => b.rating - a.rating);
+        result = result.sort((a, b) => b.rating - a.rating); // Sort by rating (high to low)
         break;
       case "distance":
-        result = result.sort((a, b) => a.distance - b.distance);
+        // Handle "incampus" distance case
+        result = result.sort((a, b) => {
+          if (a.distance === "incampus" && b.distance === "incampus") return 0;
+          if (a.distance === "incampus") return -1;
+          if (b.distance === "incampus") return 1;
+          return (a.distance || 0) - (b.distance || 0); // Sort by distance (low to high)
+        });
         break;
       default:
-        result = result.sort((a, b) => b.rating - a.rating);
+        result = result.sort((a, b) => b.rating - a.rating); // Default sort by rating (high to low)
     }
 
+    // Update the filtered hostels state
     setFilteredHostels(result);
-  }, [searchQuery, activeType, activeGender, sortBy]);
+  }, [searchQuery, activeType, activeGender, sortBy, data]);
 
   const handleHostelPress = (hostel: Hostel) => {
     // Handle hostel selection
-    console.log("Selected hostel:", hostel);
-    // You would typically navigate to a detail screen here
+    router.navigate(`/id?id=${hostel.id}`);
   };
 
   const renderSortOptions = () => (
@@ -446,7 +149,7 @@ const CampusHostels = () => {
     </View>
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
         <ActivityIndicator size="large" color="#3B82F6" />
@@ -455,8 +158,16 @@ const CampusHostels = () => {
     );
   }
 
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <Text className="text-red-500">Error: {error}</Text>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50 mt-5">
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       {/* Header */}

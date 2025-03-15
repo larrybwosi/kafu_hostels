@@ -1,0 +1,228 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // You can change this to another supported database if needed
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  phone     String
+  image     String
+  address   String
+  studentId String   @unique
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Emergency contact
+  emergencyContactName     String
+  emergencyContactRelation String
+  emergencyContactPhone    String
+
+  // Notifications
+  notificationBooking    Boolean @default(true)
+  notificationPayment    Boolean @default(true)
+  notificationPromotions Boolean @default(false)
+  notificationNewsletter Boolean @default(false)
+
+  // Relations
+  currentBooking   Booking?        @relation("CurrentUserBooking")
+  previousBookings Booking[]       @relation("UserBookingHistory")
+  paymentMethods   PaymentMethod[]
+  reviews          Review[]
+  emailVerified    Boolean
+  sessions         Session[]
+  accounts         Account[]
+
+  @@map("users")
+}
+
+model Hostel {
+  id           String   @id @default(cuid())
+  name         String
+  description  String
+  type         String
+  rooms        Int
+  roomCapacity Int
+  capacity     Int
+  gender       String
+  price        Decimal  @db.Decimal(10, 2)
+  distance     String? // Storing as String to handle 'incampus' as well as numeric values
+  rating       Float    @default(0)
+  reviewCount  Int      @default(0)
+  imageUrl     String
+  availability String
+  images       String[]
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Contact information
+  contactEmail   String
+  contactPhone   String
+  contactWebsite String?
+
+  // Location information
+  address   String
+  latitude  Float
+  longitude Float
+
+  // Warden information
+  wardenName  String
+  wardenPhone String
+  wardenImage String
+
+  // Rules and amenities
+  rules String[]
+
+  // Relations
+  amenities Amenity[]
+  bookings  Booking[]
+  reviews   Review[]
+
+  @@map("hostels")
+}
+
+model Amenity {
+  id        String   @id @default(cuid())
+  name      String
+  icon      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Relations
+  hostels   Hostel[]
+
+  @@map("amenities")
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  startDate     DateTime
+  endDate       DateTime
+  status        BookingStatus @default(PENDING)
+  totalAmount   Decimal       @db.Decimal(10, 2)
+  paymentStatus PaymentStatus @default(UNPAID)
+  semester      String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  hostel        Hostel  @relation(fields: [hostelId], references: [id])
+  hostelId      String
+  // A booking can either be a current booking or a previous booking
+  user          User?   @relation("UserBookingHistory", fields: [userId], references: [id])
+  userId        String?
+  // If this is a current booking, which user does it belong to
+  currentUser   User?   @relation("CurrentUserBooking", fields: [currentUserId], references: [id])
+  currentUserId String? @unique // Each user can have only one current booking
+
+  @@map("bookings")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Float
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  hostel   Hostel @relation(fields: [hostelId], references: [id])
+  hostelId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+
+  // Each user can only review a hostel once
+  @@unique([userId, hostelId])
+  @@map("reviews")
+}
+
+enum Role {
+  USER
+  ADMIN
+  WARDEN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model PaymentMethod {
+  id         String   @id @default(cuid())
+  type       String
+  last4      String
+  expiryDate String
+  brand      String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("payment_methods")
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  REFUNDED
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
