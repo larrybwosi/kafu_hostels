@@ -1,5 +1,7 @@
 import { hostelData } from "@/lib/data";
-// import db from "@/lib/db";
+import { updateHostelSchema } from "@/lib/validation";
+import db from "@/lib/db";
+import { ZodError } from "zod";
 
 export async function GET(request: Request, { id }: Record<string, string>) {
   const hostel = hostelData.find((hostel) => hostel.id === id);
@@ -7,18 +9,17 @@ export async function GET(request: Request, { id }: Record<string, string>) {
 }
 
 
-// export async function getHostelById(request: Request, { id }: Record<string, string>) {
+// export async function GET(request: Request, { id }: Record<string, string>) {
 //   const hostel = await db.hostel.findUnique({
 //     where: { id },
 //     include: {
-//       amenities: true,
 //       reviews: {
 //         include: {
 //           user: {
 //             select: {
 //               id: true,
 //               name: true,
-//               profileImage: true,
+//               image: true,
 //             },
 //           },
 //         },
@@ -30,10 +31,67 @@ export async function GET(request: Request, { id }: Record<string, string>) {
 // }
 
 
-// export async function DELETE(request: Request, { id }: Record<string, string>) {
-//   await db.hostel.delete({
-//     where: { id },
-//   });
+export async function DELETE(request: Request, { id }: Record<string, string>) {
+  await db.hostel.delete({
+    where: { id },
+  });
 
-//   return Response.json('Hostel deleted successfully');
-// }
+  return Response.json('Hostel deleted successfully');
+}
+
+
+export async function PATCH(request: Request, { id:hostelId }: Record<string, string>) {
+  const input = await request.json();
+  try {
+    // Validate input
+    const validatedData = updateHostelSchema.parse(input);
+
+    // Check if hostel exists
+    const existingHostel = await db.hostel.findUnique({
+      where: { id: hostelId },
+    });
+
+    if (!existingHostel) {
+      throw new Error("Hostel not found");
+    }
+
+    // If wardenId is provided, check if warden exists
+    if (validatedData.wardenId) {
+      const warden = await db.warden.findUnique({
+        where: { id: validatedData.wardenId },
+      });
+
+      if (!warden) {
+        throw new Error("Warden not found");
+      }
+    }
+
+    // Update hostel
+    const hostel = await db.hostel.update({
+      where: { id: hostelId },
+      data: {
+        ...validatedData,
+        ...(validatedData.price && { price: validatedData.price.toString() }), // Convert number to Decimal if provided
+      },
+      include: {
+        warden: true,
+      },
+    });
+
+    return hostel;
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return new Response(
+        JSON.stringify({
+          error: `Validation error: ${error.errors
+            .map((e) => e.message)
+            .join(", ")}`,
+        }),
+        { status: 400 }
+      );
+    }
+    throw error;
+  } finally {
+    await db.$disconnect();
+  }
+}

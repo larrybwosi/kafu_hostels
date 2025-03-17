@@ -1,6 +1,4 @@
-// components/FormButton.tsx
-import React from "react";
-import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 
 interface FormButtonProps {
   onPress: () => void;

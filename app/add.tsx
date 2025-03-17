@@ -22,6 +22,7 @@ import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import BottomSheet from "@/components/ui/bottom-sheets";
+import { useSession } from "@/lib/auth-client";
 
 // Field validation types
 type ValidationError = {
@@ -79,6 +80,13 @@ const AddHostel = () => {
   const [activeField, setActiveField] = useState("");
   const [wardenImage, setWardenImage] = useState<string | null>(null);
   const [bottomSheetVisible, setBottomSheetVisible] = useState(false);
+  const { isPending, data } = useSession()
+
+
+// Redirect to the home page if the user is not an admin
+  // if( ! isPending &&data?.user.role === "admin"){
+  //   router.replace("/")
+  // }
 
   // Refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -359,6 +367,7 @@ const AddHostel = () => {
     >
       <Text className="text-gray-700 mb-2 font-medium">{label}</Text>
       <TextInput
+      //@ts-ignore
         value={formData[field]}
         onChangeText={(text) => handleInputChange(field, text)}
         placeholder={placeholder}

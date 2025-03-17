@@ -1,18 +1,18 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-        plugins: [
-            [
-                "module-resolver",
-                {
-                    alias: {
-                        "better-auth/react": "./node_modules/better-auth/dist/client/react/index.cjs",
-                        "@better-auth/expo/client": "./node_modules/@better-auth/expo/dist/client.cjs"
-                    },
-                    extensions: [".cjs", ".js", ".jsx", ".ts", ".tsx"],
-                },
-            ],
-        ],
+    plugins: [
+      [
+        "module-resolver",
+        {
+          alias: {
+            "better-auth/react": "./node_modules/better-auth/dist/client/react/index.cjs",
+            "@better-auth/expo/client": "./node_modules/@better-auth/expo/dist/client.cjs"
+          },
+          extensions: [".cjs", ".js", ".jsx", ".ts", ".tsx"],
+        },
+      ],
+    ],
     presets: [
       ["babel-preset-expo", { jsxImportSource: "nativewind" }],
       "nativewind/babel",

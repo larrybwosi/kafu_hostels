@@ -1,3 +1,4 @@
+import { $fetch } from "./auth-client";
 import { LoginFormData } from "./types/validation";
 import { useFetch } from "./useFetch";
 
@@ -15,24 +16,28 @@ const getHostel = async (id: string): Promise<Hostel> => {
 };
 
 const handleSignUp = async (data: LoginFormData) => {
-  const newUser = await fetch(`${endpoint}/api/hostels/book`, {
+  const newUser = await $fetch(`${endpoint}/api/user/dashboard`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
-  }).then((res) => res.json()).catch((error) => console.log(error));
+  })
+    .then((res) => res.data)
+    .catch((error) => console.log(error));
   return newUser;
 }
 
 const handleProfileUpdate = async (data: any) => {
-  const updatedData = await fetch(`${endpoint}/api/user/dashboard`, {
+  const updatedData = await $fetch(`${endpoint}/api/user/dashboard`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(data),
-  }).then((res) => res.json()).catch((error) => console.log(error));
+  })
+    .then((res) => res.data)
+    .catch((error) => console.log(error));
   return updatedData;
 }
 
@@ -56,20 +61,21 @@ interface Booking {
 }
 
 const getUserData = async (): Promise<User & { bookingsData: Booking[] }> => {
-  const user = await fetch(`${endpoint}/api/user/dashboard`, {
-    cache: "no-cache",
-  }).then((res) => res.json());
-  return user;
+  const user = await $fetch(`${endpoint}/api/user/dashboard`, {
+    method: "GET",
+    cache: "force-cache",
+  }).then((res) => res.data).catch((error) => console.log(error));
+  return user as User & { bookingsData: Booking[] };
 };
 
 const createHostel = async (hostel: any) => {
-  const newHostel = await fetch(`${endpoint}/api/hostels/all/api/hostels`, {
+  const newHostel = await $fetch(`${endpoint}/api/hostels/all/api/hostels`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(hostel),
-  }).then((res) => res.json());
+  }).then((res) => res.data);
   return newHostel;
 };
 

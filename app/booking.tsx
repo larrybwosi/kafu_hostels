@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,8 @@ import {
   ScrollView,
   TextInput,
   Image,
-  Switch,
   Platform,
   Alert,
-  Dimensions,
   KeyboardAvoidingView,
   ActivityIndicator,
 } from "react-native";
@@ -19,8 +17,9 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useLocalSearchParams } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { useGetHostel } from "@/lib/actions";
+import { useSession } from "@/lib/auth-client";
 
 const SemesterHostelBookingScreen = () => {
   const { id } = useLocalSearchParams()
@@ -28,19 +27,19 @@ const SemesterHostelBookingScreen = () => {
     data: hostelDetails,
     loading,
     error,
-    refetch,
   } = useGetHostel(id as string);
   const [mobileNumber, setMobileNumber] = useState("");
   const [acceptRules, setAcceptRules] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("mpesa"); // mpesa, card, bank
   const [specialRequests, setSpecialRequests] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { isPending, data } = useSession();
 
   const minPaymentPercentage = 85;
   const semesterPeriod = "January 15 - May 30, 2025";
   const semesterName = "Spring 2025";
 
-  if(loading) {
+  if(loading || isPending) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text>Loading...</Text>
@@ -56,6 +55,10 @@ const SemesterHostelBookingScreen = () => {
       </View>
     );
   }
+
+  if(!data?.user.id && !isPending ) return <Redirect href={'/login'}/>
+  if(hostelDetails?.availability !== 'available') return <Redirect href={'/'} />
+  if(hostelDetails.gender !== data?.user.gender) return <Redirect href={'/'} />
 
   const paymentAmount = hostelDetails?.price || 0;
 

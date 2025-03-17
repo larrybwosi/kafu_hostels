@@ -16,7 +16,6 @@ import EditProfileModal from "@/components/edit-profile-modal";
 import { handleProfileUpdate, useGetUserData } from "@/lib/actions";
 import { formatCurrency } from "@/lib/currency";
 
-
 type TabType = "current" | "past";
 
 const ProfileScreen = () => {
@@ -43,7 +42,7 @@ const ProfileScreen = () => {
         {
           text: "Pay Now",
           onPress: () => {
-            // In a real app, this would navigate to a payment screen
+            // This should navigate to a payment screen or process the payment
             Alert.alert("Payment", "Payment processed successfully!");
           },
         },
@@ -59,12 +58,12 @@ const ProfileScreen = () => {
     await handleProfileUpdate(updatedData);
   };
 
-  if(loading){
+  if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
         <Text>Loading...</Text>
       </View>
-    )
+    );
   }
 
   if (error || !userData) {
@@ -75,13 +74,13 @@ const ProfileScreen = () => {
     );
   }
 
-  
   const currentBookings = userData?.bookingsData.filter(
     (booking) => booking.status === "active"
   );
   const pastBookings = userData?.bookingsData.filter(
     (booking) => booking.status === "completed"
   );
+
   const renderProfileHeader = () => (
     <Animated.View
       entering={FadeInDown.duration(800)}
@@ -99,7 +98,7 @@ const ProfileScreen = () => {
           <Text className="text-gray-600">{userData.email}</Text>
           <View className="flex-row items-center mt-1">
             <Text className="text-gray-500 text-xs">
-              Member since {userData.joinedDate}
+              Member since {formatDate(userData.createdAt)}
             </Text>
             <View className="h-2 w-2 rounded-full bg-gray-300 mx-2" />
             <Text className="text-gray-500 text-xs">
@@ -188,7 +187,7 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {userData.paymentMethods.map((method, index) => (
+      {userData?.paymentMethods?.map((method, index) => (
         <View
           key={index}
           className={`flex-row items-center p-3 rounded-xl mb-2 ${
@@ -210,7 +209,7 @@ const ProfileScreen = () => {
             <Text className="font-medium text-gray-800">
               {method.type === "card"
                 ? `${method.brand} •••• ${method.last4}`
-                : `${method.bankName} •••• ${method.last4}`}
+                : `${method.brand} •••• ${method.last4}`}
             </Text>
             {method.type === "card" && (
               <Text className="text-xs text-gray-500">
@@ -291,7 +290,7 @@ const ProfileScreen = () => {
         </Text>
 
         <View className="flex-row flex-wrap mb-3">
-          {booking.amenities.map((amenity: any, index: any) => (
+          {booking?.amenities?.map((amenity: any, index: any) => (
             <View
               key={index}
               className="bg-gray-50 px-2 py-1 rounded mr-2 mb-2"
@@ -353,7 +352,6 @@ const ProfileScreen = () => {
             </View>
           </View>
         </View>
-
       </View>
     </Animated.View>
   );
@@ -383,7 +381,7 @@ const ProfileScreen = () => {
           </View>
         </View>
 
-        {booking.rating && (
+        {booking?.rating && (
           <View className="pb-4 border-b border-gray-100">
             <View className="flex-row items-center mb-2">
               {[...Array(5)].map((_, i) => (
@@ -424,7 +422,7 @@ const ProfileScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       <View className="flex-row justify-between items-center px-4 pt-2 pb-4">
-        <TouchableOpacity onPress={() => router.push('/login')}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#374151" />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-gray-800">My Profile</Text>
@@ -445,8 +443,8 @@ const ProfileScreen = () => {
 
         {renderBookingTabs()}
 
-        {activeTab === "current" && currentBookings.map(renderCurrentBooking)}
-        {activeTab === "past" && pastBookings.map(renderPastBooking)}
+        {activeTab === "current" && currentBookings?.map(renderCurrentBooking)}
+        {activeTab === "past" && pastBookings?.map(renderPastBooking)}
 
         <View className="h-24" />
       </ScrollView>

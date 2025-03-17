@@ -42,7 +42,7 @@ declare interface User {
   name: string;
   email: string;
   phone: string;
-  joinedDate: string;
+  createdAt: string;
   profileImage: string;
   emergencyContact: {
     name: string;

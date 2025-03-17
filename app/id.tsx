@@ -14,12 +14,15 @@ import {
   Linking,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import Carousel from "@/components/ui/carousel";
 import { useGetHostel } from "@/lib/actions";
+import { formatCurrency } from "@/lib/currency";
+import { useSession } from "@/lib/auth-client";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -97,8 +100,10 @@ const BookingButton = ({
       className="absolute bottom-0 left-0 right-0 p-4 flex-row items-center justify-between"
     >
       <View>
-        <Text className="text-gray-700 text-xs">Price per month</Text>
-        <Text className="text-2xl font-bold text-blue-600">${price}</Text>
+        <Text className="text-gray-700 text-xs">Price per semester</Text>
+        <Text className="text-2xl font-bold text-blue-600">
+          {formatCurrency(Number(price))}
+        </Text>
       </View>
       <TouchableOpacity
         onPress={onPress}
@@ -116,6 +121,7 @@ const HostelDetail = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const { data:hostel, loading, error, refetch } = useGetHostel(id as string);
+  const { data, isPending } = useSession()
 
   // Mock reviews data
   const reviews = [
@@ -148,7 +154,7 @@ const HostelDetail = () => {
     extrapolate: "clamp",
   });
 
-  if (loading) {
+  if (loading || isPending) {
     return (
       <View className="flex-1 items-center justify-center">
         <Text>Loading...</Text>
@@ -166,6 +172,14 @@ const HostelDetail = () => {
   }
   // Handle booking
   const handleBooking = (id: string) => {
+    if (hostel.gender !== data?.user?.gender) {
+      Alert.alert(
+        "Gender Mismatch",
+        "You cannot book a hostel for a different gender.",
+        [{ text: "OK" }]
+      )
+      return
+    }
     router.push(`/booking?id=${id}`);
   };
 

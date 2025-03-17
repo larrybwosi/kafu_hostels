@@ -6,6 +6,7 @@ import StepIndicator from "@/components/step-indication";
 import { handleSignUp } from "@/lib/actions";
 import { signIn, signUp } from "@/lib/auth-client";
 import { LoginFormData, loginFormSchema } from "@/lib/types/validation";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   View,
@@ -24,13 +25,14 @@ const HostelLoginForm: React.FC = () => {
     name: "",
     email: "",
     password: "",
+    phone: "",
     idType: "national_id",
     idNumber: "",
     gender: "male",
     emergencyContact: {
       name: "",
-      relationship: "",
-      contactNumber: "",
+      relation: "",
+      phone: "",
     },
     roomPreference: "shared",
   });
@@ -104,14 +106,36 @@ const HostelLoginForm: React.FC = () => {
   };
 
   const handleSubmit = async() => {
+    console.log('form data', formData);
     if (validateStep(2)) {
-     const user = await signUp.email({email: formData.email, password: formData.password, name: formData.name});
-     console.log(user.data?.user.id);
-     if (!user.data?.user.id) {
-      Alert.alert("Error", "Failed to sign up");
-      return
+      
+     const { data, error } = await signUp.email({
+       email: formData.email,
+       password: formData.password,
+       name: formData.name,
+
+     });
+     console.log(data, error);
+
+     if (error?.code === "USER_ALREADY_EXISTS") {
+       Alert.alert(
+         "User already exists",
+         "A user with the provided email already exists. Please log in instead."
+       )
+       return
      }
-      await handleSignUp(formData);
+      await handleSignUp(formData).then( async() => {
+        await signIn.email({
+          email: formData.email,
+          password: formData.password,
+          rememberMe: true
+        })
+      }).catch((error) => {
+        console.log(error);
+      }).finally(() => {
+        setCurrentStep(1);
+        router.push("/");
+      });
     }
   };
 
@@ -186,6 +210,13 @@ const HostelLoginForm: React.FC = () => {
                 placeholder="someone example"
                 error={errors.name}
               />
+              <FormInput
+                label="Phone Number"
+                value={formData.phone}
+                onChangeText={(text) => updateFormData("phone", text)}
+                placeholder="Enter your phone number"
+                error={errors.phone}
+              />
 
               <FormInput
                 label="Email Address"
@@ -194,6 +225,18 @@ const HostelLoginForm: React.FC = () => {
                 placeholder="someone@example.com"
                 error={errors.email}
                 keyboardType="email-address"
+              />
+
+              <FormInput
+                label="Password"
+                value={formData.password}
+                onChangeText={(text) => updateFormData("password", text)}
+                placeholder="Create a secure password"
+                error={errors.password}
+                secureTextEntry={!showPassword}
+                isPassword={true}
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                showPassword={showPassword}
               />
 
               <FormPicker
@@ -227,18 +270,6 @@ const HostelLoginForm: React.FC = () => {
                 error={errors.gender}
               />
 
-              <FormInput
-                label="Password"
-                value={formData.password}
-                onChangeText={(text) => updateFormData("password", text)}
-                placeholder="Create a secure password"
-                error={errors.password}
-                secureTextEntry={!showPassword}
-                isPassword={true}
-                onTogglePassword={() => setShowPassword(!showPassword)}
-                showPassword={showPassword}
-              />
-
               <FormButton
                 title="Next Step"
                 onPress={nextStep}
@@ -261,9 +292,9 @@ const HostelLoginForm: React.FC = () => {
 
                 <FormInput
                   label="Relationship"
-                  value={formData.emergencyContact.relationship}
+                  value={formData.emergencyContact.relation}
                   onChangeText={(text) =>
-                    updateEmergencyContact("relationship", text)
+                    updateEmergencyContact("relation", text)
                   }
                   placeholder="eg. Father"
                   error={errors["emergencyContact.relationship"]}
@@ -271,10 +302,8 @@ const HostelLoginForm: React.FC = () => {
 
                 <FormInput
                   label="Contact Number"
-                  value={formData.emergencyContact.contactNumber}
-                  onChangeText={(text) =>
-                    updateEmergencyContact("contactNumber", text)
-                  }
+                  value={formData.emergencyContact.phone}
+                  onChangeText={(text) => updateEmergencyContact("phone", text)}
                   placeholder="07 000 0000"
                   error={errors["emergencyContact.contactNumber"]}
                   keyboardType="phone-pad"

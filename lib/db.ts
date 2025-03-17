@@ -1,15 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client/edge";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import { AcceleratedPrismaClient } from "./prisma.config";
 
 declare global {
   // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prisma: AcceleratedPrismaClient | undefined;
 }
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+  return new PrismaClient().$extends(withAccelerate());
 };
 
-export const db: PrismaClient = globalThis.prisma ?? prismaClientSingleton();
+const db: PrismaClient = globalThis.prisma ?? prismaClientSingleton();
 
 if (process.env.NODE_ENV !== "production") globalThis.prisma = db;
 

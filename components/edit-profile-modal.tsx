@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  StyleSheet,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
-// import * as ImagePicker from "expo-image-picker";
+import * as ImagePicker from "expo-image-picker";
 
 interface EditProfileModalProps {
   visible: boolean;
@@ -98,39 +97,39 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   };
 
   const handlePickImage = async () => {
-    // const permissionResult =
-    //   await ImagePicker.requestMediaLibraryPermissionsAsync();
-    // if (permissionResult.granted === false) {
-    //   alert("Permission to access camera roll is required!");
-    //   return;
-    // }
-    // const result = await ImagePicker.launchImageLibraryAsync({
-    //   mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    //   allowsEditing: true,
-    //   aspect: [1, 1],
-    //   quality: 0.8,
-    // });
-    // if (!result.canceled && result.assets && result.assets.length > 0) {
-    //   setFormData((prev) => ({ ...prev, profileImage: result.assets[0].uri }));
-    //   setImageUpdated(true);
-    // }
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: 'images',
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setFormData((prev) => ({ ...prev, profileImage: result.assets[0].uri }));
+      setImageUpdated(true);
+    }
   };
 
   const handleTakePhoto = async () => {
-    // const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    // if (permissionResult.granted === false) {
-    //   alert("Permission to access camera is required!");
-    //   return;
-    // }
-    // const result = await ImagePicker.launchCameraAsync({
-    //   allowsEditing: true,
-    //   aspect: [1, 1],
-    //   quality: 0.8,
-    // });
-    // if (!result.canceled && result.assets && result.assets.length > 0) {
-    //   setFormData((prev) => ({ ...prev, profileImage: result.assets[0].uri }));
-    //   setImageUpdated(true);
-    // }
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera is required!");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setFormData((prev) => ({ ...prev, profileImage: result.assets[0].uri }));
+      setImageUpdated(true);
+    }
   };
 
   const renderSectionButton = (
@@ -175,10 +174,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       <View className="items-center mb-6">
         <TouchableOpacity
-          onPress={() => {
+          onPress={async() => {
             // Show image options
             // In a real app, you might use ActionSheet here
-            handlePickImage();
+           await handlePickImage();
           }}
           className="relative"
         >

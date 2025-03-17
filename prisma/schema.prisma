@@ -4,45 +4,98 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  // You can change this to another supported database if needed
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  phone     String
-  image     String
-  address   String
-  studentId String   @unique
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String
+  password      String?
+  phone         String?
+  image         String    @default("https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=600")
+  address       String?
+  studentId     String?   @unique
+  gender        String?
+  role          Role?     @default(USER)
+  emailVerified Boolean  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Emergency contact
-  emergencyContactName     String
-  emergencyContactRelation String
-  emergencyContactPhone    String
+  emergencyContact EmergencyContact?
 
-  // Notifications
-  notificationBooking    Boolean @default(true)
-  notificationPayment    Boolean @default(true)
-  notificationPromotions Boolean @default(false)
-  notificationNewsletter Boolean @default(false)
+  // Notification preferences
+  notificationPreferences NotificationPreference?
 
   // Relations
   currentBooking   Booking?        @relation("CurrentUserBooking")
   previousBookings Booking[]       @relation("UserBookingHistory")
   paymentMethods   PaymentMethod[]
+  payments         Payment[]
   reviews          Review[]
-  emailVerified    Boolean
   sessions         Session[]
   accounts         Account[]
 
+  // Identification
+  identification Identification? @relation("UserIdentification")
+
   @@map("users")
+}
+
+model Identification {
+  id       String @id @default(cuid())
+  name     String
+  number   String
+  type     String
+  url      String?
+
+  // Relations
+  user   User   @relation("UserIdentification", fields: [userId], references: [id])
+  userId String @unique
+
+  @@map("identifications")
+}
+
+model EmergencyContact {
+  id       String @id @default(cuid())
+  name     String
+  relation String
+  phone    String
+  // Relations
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   String @unique
+
+  @@map("emergency_contacts")
+}
+
+model NotificationPreference {
+  id         String  @id @default(cuid())
+  booking    Boolean @default(true)
+  payment    Boolean @default(true)
+  promotions Boolean @default(false)
+  newsletter Boolean @default(false)
+  // Relations
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String  @unique
+
+  @@map("notification_preferences")
+}
+
+model Warden {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // Relations
+  hostels   Hostel[]
+
+  @@map("wardens")
 }
 
 model Hostel {
@@ -58,9 +111,7 @@ model Hostel {
   distance     String? // Storing as String to handle 'incampus' as well as numeric values
   rating       Float    @default(0)
   reviewCount  Int      @default(0)
-  imageUrl     String
   availability String
-  images       String[]
   featured     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -75,56 +126,124 @@ model Hostel {
   latitude  Float
   longitude Float
 
-  // Warden information
-  wardenName  String
-  wardenPhone String
-  wardenImage String
+  // Media
+  imageUrl String
+  images   String[]
 
   // Rules and amenities
-  rules String[]
+  rules     String[]
+  amenities String[]
 
   // Relations
-  amenities Amenity[]
-  bookings  Booking[]
-  reviews   Review[]
+  warden   Warden    @relation(fields: [wardenId], references: [id])
+  wardenId String
+  bookings Booking[]
+  reviews  Review[]
 
   @@map("hostels")
 }
 
-model Amenity {
-  id        String   @id @default(cuid())
-  name      String
-  icon      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // Relations
-  hostels   Hostel[]
+model Booking {
+  id          String        @id @default(cuid())
+  startDate   DateTime
+  endDate     DateTime
+  status      BookingStatus @default(PENDING)
+  totalAmount Decimal       @db.Decimal(10, 2)
+  semester    String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
-  @@map("amenities")
+  // Relations
+  hostel        Hostel   @relation(fields: [hostelId], references: [id])
+  hostelId      String
+  // A booking can either be a current booking or a previous booking
+  user          User?    @relation("UserBookingHistory", fields: [userId], references: [id])
+  userId        String?
+  // If this is a current booking, which user does it belong to
+  currentUser   User?    @relation("CurrentUserBooking", fields: [currentUserId], references: [id])
+  currentUserId String?  @unique // Each user can have only one current booking
+  // Payment information
+  payment       Payment?
+
+  @@map("bookings")
 }
 
-model Booking {
+model Payment {
   id            String        @id @default(cuid())
-  startDate     DateTime
-  endDate       DateTime
-  status        BookingStatus @default(PENDING)
-  totalAmount   Decimal       @db.Decimal(10, 2)
-  paymentStatus PaymentStatus @default(UNPAID)
-  semester      String?
+  amount        Decimal       @db.Decimal(10, 2)
+  currency      String        @default("KES")
+  status        PaymentStatus @default(UNPAID)
+  paymentMethod PaymentType
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   // Relations
-  hostel        Hostel  @relation(fields: [hostelId], references: [id])
-  hostelId      String
-  // A booking can either be a current booking or a previous booking
-  user          User?   @relation("UserBookingHistory", fields: [userId], references: [id])
-  userId        String?
-  // If this is a current booking, which user does it belong to
-  currentUser   User?   @relation("CurrentUserBooking", fields: [currentUserId], references: [id])
-  currentUserId String? @unique // Each user can have only one current booking
+  booking   Booking @relation(fields: [bookingId], references: [id])
+  bookingId String  @unique
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
 
-  @@map("bookings")
+  // Payment type specific details
+  cardPayment  CardPayment?
+  mpesaPayment MpesaPayment?
+
+  @@map("payments")
+}
+
+model CardPayment {
+  id            String   @id @default(cuid())
+  transactionId String   @unique
+  last4         String
+  brand         String
+  expiryMonth   Int
+  expiryYear    Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String  @unique
+
+  @@map("card_payments")
+}
+
+model MpesaPayment {
+  id                String   @id @default(cuid())
+  transactionCode   String   @unique
+  phoneNumber       String
+  accountReference  String
+  merchantRequestId String?
+  checkoutRequestId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  paymentId String  @unique
+
+  @@map("mpesa_payments")
+}
+
+model PaymentMethod {
+  id        String      @id @default(cuid())
+  type      PaymentType
+  isDefault Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Card specific fields
+  last4      String?
+  expiryDate String?
+  brand      String?
+
+  // MPesa specific fields
+  phoneNumber String?
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("payment_methods")
 }
 
 model Review {
@@ -145,6 +264,53 @@ model Review {
   @@map("reviews")
 }
 
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
 enum Role {
   USER
   ADMIN
@@ -158,23 +324,6 @@ enum BookingStatus {
   COMPLETED
 }
 
-model PaymentMethod {
-  id         String   @id @default(cuid())
-  type       String
-  last4      String
-  expiryDate String
-  brand      String
-  isDefault  Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  // Relations
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-
-  @@map("payment_methods")
-}
-
 enum PaymentStatus {
   UNPAID
   PARTIALLY_PAID
@@ -182,47 +331,7 @@ enum PaymentStatus {
   REFUNDED
 }
 
-model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([token])
-  @@map("session")
-}
-
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
-
-  @@map("account")
-}
-
-model Verification {
-  id         String    @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
-
-  @@map("verification")
+enum PaymentType {
+  CARD
+  MPESA
 }

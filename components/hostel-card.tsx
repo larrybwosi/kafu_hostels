@@ -2,7 +2,6 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AvailabilityTag from "./availability-tag";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
-import { Hostel } from "@/lib/types";
 
 interface HostelCardProps {
   hostel: Hostel;
@@ -67,7 +66,7 @@ const HostelCard = ({ hostel, onPress }: HostelCardProps) => {
 
             <View className="flex-row items-center justify-between mt-2">
               <Text className="text-blue-600 font-bold">
-                ${hostel.price}/month
+                KSH: {hostel.price}/semester
               </Text>
               <View className="flex-row items-center">
                 <FontAwesome5 name="walking" size={10} color="#6B7280" />
