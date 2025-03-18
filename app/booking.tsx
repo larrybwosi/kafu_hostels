@@ -56,7 +56,7 @@ const SemesterHostelBookingScreen = () => {
     );
   }
 
-  if(!data?.user.id && !isPending ) return <Redirect href={'/login'}/>
+  if(!data?.user.id && !isPending ) return <Redirect href={'/sign-in'}/>
   if(hostelDetails?.availability !== 'available') return <Redirect href={'/'} />
   if(hostelDetails.gender !== data?.user.gender) return <Redirect href={'/'} />
 

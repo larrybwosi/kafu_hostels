@@ -172,6 +172,14 @@ const HostelDetail = () => {
   }
   // Handle booking
   const handleBooking = (id: string) => {
+    if(!data?.user.email) {
+      Alert.alert(
+        "Login Required",
+        "You need to be logged in to book a hostel.",
+        [{ text: "OK" }, { text: "Login", onPress: () => router.push("/sign-in") }]
+      )
+      return
+    }
     if (hostel.gender !== data?.user?.gender) {
       Alert.alert(
         "Gender Mismatch",

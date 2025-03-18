@@ -198,11 +198,11 @@ export const hostelData: Hostel[] = [
     rating: 4.1,
     reviews: 80,
     imageUrl:
-      "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg",
+      "https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=600",
     featured: false,
     availability: "Available",
     images: [
-      "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg",
+      "https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=600",
       "https://images.unsplash.com/photo-1560448204-603b3fc33ddc",
       "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg",
     ],
@@ -245,11 +245,11 @@ export const hostelData: Hostel[] = [
     rating: 4.0,
     reviews: 75,
     imageUrl:
-      "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg",
+      "https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=600",
     featured: false,
     availability: "Available",
     images: [
-      "https://images.pexels.com/photos/276724/pexels-photo-276724.jpeg",
+      "https://images.pexels.com/photos/1571453/pexels-photo-1571453.jpeg?auto=compress&cs=tinysrgb&w=600",
       "https://images.unsplash.com/photo-1560448204-603b3fc33ddc",
       "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg",
     ],

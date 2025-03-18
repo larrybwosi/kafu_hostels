@@ -219,17 +219,6 @@ const AddHostel = () => {
     });
   };
 
-  // Update location
-  const updateLocation = (region: Region) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      location: {
-        latitude: region.latitude,
-        longitude: region.longitude,
-      },
-    }));
-  };
-
   // Validate form before submission
   const validateForm = (): boolean => {
     const newErrors: ValidationError = {};

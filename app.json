@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kafu hostels",
     "slug": "kafu_hostels",
-    "version": "1.0.0",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "kafuhostels",
@@ -14,10 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "googleMaps": {
-          "apiKey": "AIzaSyDTopKUF62TJQmkF5CkFAlsOZ1oOZQngT0"
-        }
+        "backgroundColor": "#ffffff"
       },
       "package": "com.kafuhostels"
     },
@@ -37,7 +34,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/kafu_hostels_splash.jpg",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

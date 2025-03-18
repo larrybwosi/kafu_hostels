@@ -22,7 +22,7 @@ const ProfileScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>("current");
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
-  const { data: userData, loading, error, refetch } = useGetUserData();
+  const { data: userData, loading, error } = useGetUserData();
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -422,7 +422,7 @@ const ProfileScreen = () => {
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
       <View className="flex-row justify-between items-center px-4 pt-2 pb-4">
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.navigate('/sign-in')}>
           <Ionicons name="chevron-back" size={24} color="#374151" />
         </TouchableOpacity>
         <Text className="text-lg font-bold text-gray-800">My Profile</Text>
