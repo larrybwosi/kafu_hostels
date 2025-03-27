@@ -1,6 +1,5 @@
 
-
-export const hostelData: Hostel[] = [
+export const hostelData: any[] = [
   {
     id: "1",
     name: "Hargreaves Hostel",
@@ -45,7 +44,7 @@ export const hostelData: Hostel[] = [
     ],
     amenities: [
       { name: "Wi-Fi", icon: "wifi" },
-      { name: "Laundry", icon: "washing-machine" },
+      { name: "Laundry", icon: "soap" },
       { name: "Study Room", icon: "book" },
     ],
   },
@@ -227,7 +226,7 @@ export const hostelData: Hostel[] = [
     ],
     amenities: [
       { name: "Wi-Fi", icon: "wifi" },
-      { name: "Laundry", icon: "washing-machine" },
+      { name: "Laundry", icon: "soap" },
       { name: "Study Room", icon: "book" },
     ],
   },
@@ -317,7 +316,7 @@ export const hostelData: Hostel[] = [
     ],
     amenities: [
       { name: "Wi-Fi", icon: "wifi" },
-      { name: "Laundry", icon: "washing-machine" },
+      { name: "Laundry", icon: "soap" },
       { name: "Study Room", icon: "book" },
     ],
   },
@@ -497,7 +496,7 @@ export const hostelData: Hostel[] = [
     ],
     amenities: [
       { name: "Wi-Fi", icon: "wifi" },
-      { name: "Laundry", icon: "washing-machine" },
+      { name: "Laundry", icon: "soap" },
       { name: "Study Room", icon: "book" },
     ],
   },

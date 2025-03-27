@@ -7,7 +7,6 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
-  Dimensions,
   Animated,
   Keyboard,
   Alert,
@@ -21,7 +20,7 @@ interface LoginProps {
   onLogin: (email: string, password: string) => void;
 }
 
-const LoginScreen: React.FC<LoginProps> = ({ onLogin }) => {
+const LoginScreen: React.FC<LoginProps> = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");

@@ -8,6 +8,7 @@ import {
   Alert,
   SafeAreaView,
   StatusBar,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInUp, FadeInDown } from "react-native-reanimated";
@@ -22,7 +23,7 @@ const ProfileScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>("current");
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
-  const { data: userData, loading, error } = useGetUserData();
+  const { data: userData, loading, error, refetch } = useGetUserData();
 
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -66,18 +67,24 @@ const ProfileScreen = () => {
     );
   }
 
-  if (error || !userData) {
+  if (error || !userData ) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text>Error: {error}</Text>
+        <Text className="text-lg">An unexpected error occured {error}</Text>
+        <Pressable 
+          className="bg-blue-500 p-2 px-4 rounded-lg"
+          onPress={()=>refetch({})}
+        >
+          <Text className="text-md text-white">Refetch</Text>
+        </Pressable>
       </View>
     );
   }
 
-  const currentBookings = userData?.bookingsData.filter(
+  const currentBookings = userData?.bookingsData?.filter(
     (booking) => booking.status === "active"
   );
-  const pastBookings = userData?.bookingsData.filter(
+  const pastBookings = userData?.bookingsData?.filter(
     (booking) => booking.status === "completed"
   );
 
@@ -93,7 +100,7 @@ const ProfileScreen = () => {
         />
         <View className="ml-4 flex-1">
           <Text className="text-2xl font-bold text-gray-800">
-            {userData.name}
+            {userData?.name}
           </Text>
           <Text className="text-gray-600">{userData.email}</Text>
           <View className="flex-row items-center mt-1">
@@ -152,26 +159,27 @@ const ProfileScreen = () => {
         <Text className="text-gray-800 font-medium">{userData.address}</Text>
       </View>
 
-      <View className="pt-2 border-t border-gray-100">
-        <Text className="text-gray-500 text-xs mb-2">Emergency Contact</Text>
-        <View className="flex-row items-center">
-          <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center mr-2">
-            <Ionicons name="person-outline" size={14} color="#4B5563" />
+      {userData.emergencyContact && (
+        <View className="pt-2 border-t border-gray-100">
+          <Text className="text-gray-500 text-xs mb-2">Emergency Contact</Text>
+          <View className="flex-row items-center">
+            <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center mr-2">
+              <Ionicons name="person-outline" size={14} color="#4B5563" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-gray-800 font-medium">
+                {userData && userData?.emergencyContact?.name}
+              </Text>
+              <Text className="text-gray-600">
+                {userData?.emergencyContact?.phone}
+              </Text>
+            </View>
+            <TouchableOpacity className="bg-blue-50 p-2 rounded-full">
+              <Ionicons name="call-outline" size={14} color="#3B82F6" />
+            </TouchableOpacity>
           </View>
-          <View className="flex-1">
-            <Text className="text-gray-800 font-medium">
-              {userData.emergencyContact.name} (
-              {userData.emergencyContact.relation})
-            </Text>
-            <Text className="text-gray-600">
-              {userData.emergencyContact.phone}
-            </Text>
-          </View>
-          <TouchableOpacity className="bg-blue-50 p-2 rounded-full">
-            <Ionicons name="call-outline" size={14} color="#3B82F6" />
-          </TouchableOpacity>
         </View>
-      </View>
+      )}
     </Animated.View>
   );
 
@@ -246,7 +254,7 @@ const ProfileScreen = () => {
             style={{ color: activeTab === "current" ? "#3B82F6" : "#4B5563" }}
           >
             Current
-            <Text className="text-xs ml-1">({currentBookings.length})</Text>
+            <Text className="text-xs ml-1">({currentBookings?.length})</Text>
           </Text>
         </TouchableOpacity>
 
@@ -260,7 +268,7 @@ const ProfileScreen = () => {
             style={{ color: activeTab === "past" ? "#3B82F6" : "#4B5563" }}
           >
             Past
-            <Text className="text-xs ml-1">({pastBookings.length})</Text>
+            <Text className="text-xs ml-1">({pastBookings?.length})</Text>
           </Text>
         </TouchableOpacity>
       </View>

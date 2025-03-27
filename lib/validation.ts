@@ -39,7 +39,7 @@ export const updateUserSchema = z.object({
     .string()
     .min(10, "Phone number must be at least 10 characters")
     .optional(),
-  image: z.string().optional().nullable(),
+  image: z.string().optional(),
   address: z.string().min(1, "Address is required").optional(),
   emergencyContact: emergencyContactSchema.optional(),
   notificationPreferences: notificationPreferenceSchema.optional(),

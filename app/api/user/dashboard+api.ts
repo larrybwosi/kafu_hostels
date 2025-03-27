@@ -7,64 +7,54 @@ import { ZodError } from "zod";
 
 export async function GET( request: Request) {
   const headers = request.headers;
-  const session = await auth.api.getSession({ headers });
+  
+  try {
+    const session = await auth.api.getSession({ headers });
 
-  if(!session?.user.id) return Response.json({ ...mockUser, bookingsData: mockBookingData });
+    if (!session?.user.id){
+      return Response.json({ ...mockUser, bookingsData: mockBookingData });
+    }
+    
+    const userId = session.user.id;
+    const user = await db.user.findUnique({ where: { id: userId } });
 
-  const userId = session.user.id
-  const user = await db.user.findUnique({ where:{ id: userId }})
+    const [currentBooking, totalBookings, reviewsCount, paymentMethodsCount] =
+      await Promise.all([
+        db.booking.findFirst({
+          where: {
+            currentUserId: userId,
+            status: { not: "COMPLETED" },
+          },
+          include: {
+            hostel: true,
+          },
+        }),
+        db.booking.count({
+          where: {
+            OR: [{ userId }, { currentUserId: userId }],
+          },
+        }),
+        db.review.count({
+          where: { userId },
+        }),
+        db.paymentMethod.count({
+          where: { userId },
+        }),
+      ]);
 
-  const [currentBooking, totalBookings, reviewsCount, paymentMethodsCount] =
-    await Promise.all([
-      db.booking.findFirst({
-        where: {
-          currentUserId: userId,
-          status: { not: "COMPLETED" },
-        },
-        include: {
-          hostel: true,
-        },
-      }),
-      db.booking.count({
-        where: {
-          OR: [{ userId }, { currentUserId: userId }],
-        },
-      }),
-      db.review.count({
-        where: { userId },
-      }),
-      db.paymentMethod.count({
-        where: { userId },
-      }),
-    ]);
-
-  return Response.json({
-    ...user,
-    currentBooking,
-    totalBookings,
-    reviewsCount,
-    paymentMethodsCount,
-  })
+    return Response.json({
+      ...user,
+      currentBooking,
+      totalBookings,
+      reviewsCount,
+      paymentMethodsCount,
+    });
+  } catch (error: any) {
+    console.log(error);
+    return Response.json({ error: error }, { status: 500 });
+  }
 }
 
-
-// export async function GET(request: Request) {
-  
-//     const headers = request.headers;
-//     const user = await auth.api.getSession({ headers });
-
-//     if(!user?.user.id) return Response.json({ ...mockUser, bookingsData: mockBookingData });
-
-//     const userRes = await db.user.findUnique({
-//       where: { id: user?.user.id },
-//       include: {
-//         emergencyContact: true,
-//         notificationPreferences: true,
-//       },
-//     })
-    
-//   return Response.json({ ...userRes, bookingsData: mockBookingData });
-// }
 
 export async function POST(request: Request) {
   const data = await request.json();
@@ -75,23 +65,23 @@ export async function POST(request: Request) {
     const user = await auth.api.getSession({ headers });
     
     if(!user?.user.id) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-const {
-  name,
-  studentRegNo,
-  phone,
-  idType,
-  emergencyContact,
-  gender,
-  idNumber,
-  roomPreference
-} = validatedData;
+    const {
+      name,
+      studentRegNo,
+      phone,
+      idType,
+      emergencyContact,
+      gender,
+      idNumber,
+      roomPreference
+    } = validatedData;
     const userUpdate = await db.user.update({
       where: { id: user?.user.id },
       data: {
         name: name,
         studentId: studentRegNo,
-        phone: phone,
-        gender: gender,
+        phone,
+        gender,
         identification: {
           create: {
             type: idType,

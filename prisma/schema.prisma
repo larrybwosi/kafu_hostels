@@ -19,7 +19,7 @@ model User {
   address       String?
   studentId     String?   @unique
   gender        String?
-  role          Role?     @default(USER)
+  role          String?  
   emailVerified Boolean  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -87,8 +87,8 @@ model NotificationPreference {
 model Warden {
   id        String   @id @default(cuid())
   name      String
-  phone     String
-  email     String
+  phone     String   @unique
+  email     String?   @unique
   image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

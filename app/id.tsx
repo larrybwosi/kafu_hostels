@@ -17,7 +17,7 @@ import {
   Alert,
 } from "react-native";
 import { BlurView } from "expo-blur";
-import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { FontAwesome5, FontAwesome6, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import Carousel from "@/components/ui/carousel";
 import { useGetHostel } from "@/lib/actions";
@@ -78,7 +78,7 @@ const AmenityItem = ({ name, icon }: { name: string; icon: string }) => {
   return (
     <View className="items-center mr-5 mb-4 w-16">
       <View className="h-12 w-12 rounded-full bg-blue-100 items-center justify-center mb-1">
-        <FontAwesome5 name={icon} size={18} color="#3B82F6" />
+        <FontAwesome6 name={icon} size={18} color="#3B82F6" />
       </View>
       <Text className="text-xs text-center text-gray-700">{name}</Text>
     </View>
@@ -171,6 +171,7 @@ const HostelDetail = () => {
     );
   }
   // Handle booking
+  
   const handleBooking = (id: string) => {
     if(!data?.user.email) {
       Alert.alert(
@@ -180,6 +181,7 @@ const HostelDetail = () => {
       )
       return
     }
+    //@ts-ignore
     if (hostel.gender !== data?.user?.gender) {
       Alert.alert(
         "Gender Mismatch",

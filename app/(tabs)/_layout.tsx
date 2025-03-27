@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 
@@ -21,7 +21,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Ionicons size={28} name="home" color={color} />,
+          tabBarIcon: ({ color }) => <Feather size={28} name="home" color={color} />,
         }}
       />
       <Tabs.Screen

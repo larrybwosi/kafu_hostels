@@ -22,5 +22,6 @@ export const {
   updateUser,
   useSession,
   $fetch,
+  getCookie,
   $ERROR_CODES,
 } = authClient;

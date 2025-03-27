@@ -2,21 +2,21 @@ import { $fetch } from "./auth-client";
 import { LoginFormData } from "./types/validation";
 import { useFetch } from "./useFetch";
 
-const endpoint = "http://localhost:8081";
+const endpoint = process.env.NODE_ENV === 'production'? process.env.EXPO_PUBLIC_API_ENDPOINT : "http://localhost:8081";
 const getAllHostels = async (): Promise<Hostel[]> => {
-  const hostels = await fetch(`${endpoint}/api/hostels/all`, {
+  const hostels = await fetch(`/api/hostels/all`, {
     cache: "force-cache",
   }).then((res) => res.json());
   return hostels;
 };
 
 const getHostel = async (id: string): Promise<Hostel> => {
-  const hostel = await fetch(`${endpoint}/api/hostels/${id}`, { cache: "no-cache" }).then((res) => res.json());
+  const hostel = await fetch(`/api/hostels/${id}`, { cache: "no-cache" }).then((res) => res.json());
   return hostel;
 };
 
 const handleSignUp = async (data: LoginFormData) => {
-  const newUser = await $fetch(`${endpoint}/api/user/dashboard`, {
+  const newUser = await $fetch(`/api/user/dashboard`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -29,7 +29,7 @@ const handleSignUp = async (data: LoginFormData) => {
 }
 
 const handleProfileUpdate = async (data: any) => {
-  const updatedData = await $fetch(`${endpoint}/api/user/dashboard`, {
+  const updatedData = await $fetch(`/api/user/dashboard`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -64,7 +64,10 @@ const getUserData = async (): Promise<User & { bookingsData: Booking[] }> => {
   const user = await $fetch(`${endpoint}/api/user/dashboard`, {
     method: "GET",
     cache: "force-cache",
-  }).then((res) => res.data).catch((error) => console.log(error));
+  })
+    .then((res) => res.data)
+    .catch((error) => console.log("error", error));
+    
   return user as User & { bookingsData: Booking[] };
 };
 

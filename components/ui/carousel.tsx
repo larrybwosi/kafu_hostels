@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   View,
   ScrollView,
@@ -6,15 +6,9 @@ import {
   TouchableOpacity,
   Image,
   Text,
-  StyleSheet,
   NativeSyntheticEvent,
   NativeScrollEvent,
 } from "react-native";
-import {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
 
 interface CarouselItem {
   id: string;
@@ -118,7 +112,7 @@ const Carousel: React.FC<CarouselProps> = ({
         scrollEventThrottle={16}
         onScrollBeginDrag={pauseAutoPlay}
         onScrollEndDrag={startAutoPlay}
-        className="w-full h-64"
+        className="w-full h-64 sm:h-80 md:h-96 lg:h-112"
       >
         {data.map((item, index) => (
           <TouchableOpacity
@@ -134,8 +128,12 @@ const Carousel: React.FC<CarouselProps> = ({
               resizeMode="cover"
             />
             <View className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-4 rounded-b-lg">
-              <Text className="text-white text-lg font-bold">{item.title}</Text>
-              <Text className="text-white text-sm">{item.description}</Text>
+              <Text className="text-white text-lg font-bold sm:text-xl md:text-2xl">
+                {item.title}
+              </Text>
+              <Text className="text-white text-sm sm:text-base md:text-lg">
+                {item.description}
+              </Text>
             </View>
           </TouchableOpacity>
         ))}

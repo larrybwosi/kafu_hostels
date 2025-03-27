@@ -17,6 +17,7 @@ import {
   Image,
   Text,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 
 const HostelLoginForm: React.FC = () => {
@@ -106,7 +107,23 @@ const HostelLoginForm: React.FC = () => {
   };
 
   const handleSubmit = async() => {
-    console.log('form data', formData);
+    // const formData = {
+    //   email: "akme@dgo.clv",
+    //   emergencyContact: {
+    //     name: "Edyhj",
+    //     phone: "0909090909",
+    //     relation: "some",
+    //   },
+    //   gender: "male",
+    //   idNumber: "12121212",
+    //   idType: "national_id",
+    //   name: "akme",
+    //   password: "123456789",
+    //   phone: "090909090909",
+    //   roomPreference: "shared",
+    //   studentRegNo: "678987",
+    // };
+    // console.log('Testing')
     if (validateStep(2)) {
       
      const { data, error } = await signUp.email({
@@ -132,7 +149,7 @@ const HostelLoginForm: React.FC = () => {
         })
       }).catch((error) => {
         console.log(error);
-      }).finally(() => {
+      }).then((r) => console.log(r)).finally(() => {
         setCurrentStep(1);
         router.push("/");
       });
@@ -169,6 +186,9 @@ const HostelLoginForm: React.FC = () => {
         className="flex-1"
       >
         <ScrollView className="flex-1 p-4">
+          <TouchableOpacity onPress={()=>handleSubmit()}>
+            <Text>Submission Text</Text>
+          </TouchableOpacity>
           {/* Header */}
           <View className="items-center mb-6">
             <Image
