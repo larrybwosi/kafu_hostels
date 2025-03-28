@@ -28,7 +28,7 @@
       [
         "expo-router",
         {
-          "origin": "https://kafu-hostels--d6q6dj9gzc.expo.app"
+          "origin": "http://localhost:8081"
         }
       ],
       [

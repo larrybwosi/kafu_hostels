@@ -8,9 +8,9 @@ import db from "./db";
 
 export const auth = betterAuth({
   database: prismaAdapter(db, {
-    provider: "postgresql", // or "mysql", "postgresql", ...etc
+    provider: "postgresql",
   }),
-  trustedOrigins: ["kafuhostels://"],
+  trustedOrigins: ["kafuhostels://", "https://kafu-hostels.expo.app", "http://localhost:8081"],
   plugins: [
     expo(),
     admin(),

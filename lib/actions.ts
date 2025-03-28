@@ -2,7 +2,11 @@ import { $fetch } from "./auth-client";
 import { LoginFormData } from "./types/validation";
 import { useFetch } from "./useFetch";
 
-const endpoint = process.env.NODE_ENV === 'production'? process.env.EXPO_PUBLIC_API_ENDPOINT : "http://localhost:8081";
+const endpoint =
+  process.env.NODE_ENV === "production"
+    ? "https://kafu-hostels.expo.app"
+    : 
+    "http://localhost:8081";
 const getAllHostels = async (): Promise<Hostel[]> => {
   const hostels = await fetch(`/api/hostels/all`, {
     cache: "force-cache",
@@ -11,7 +15,9 @@ const getAllHostels = async (): Promise<Hostel[]> => {
 };
 
 const getHostel = async (id: string): Promise<Hostel> => {
-  const hostel = await fetch(`/api/hostels/${id}`, { cache: "no-cache" }).then((res) => res.json());
+  const hostel = await fetch(`/api/hostels/${id}`, {
+    cache: "force-cache",
+  }).then((res) => res.json());
   return hostel;
 };
 
@@ -61,7 +67,7 @@ interface Booking {
 }
 
 const getUserData = async (): Promise<User & { bookingsData: Booking[] }> => {
-  const user = await $fetch(`${endpoint}/api/user/dashboard`, {
+  const user = await $fetch(`/api/user/dashboard`, {
     method: "GET",
     cache: "force-cache",
   })
@@ -72,7 +78,7 @@ const getUserData = async (): Promise<User & { bookingsData: Booking[] }> => {
 };
 
 const createHostel = async (hostel: any) => {
-  const newHostel = await $fetch(`${endpoint}/api/hostels/all/api/hostels`, {
+  const newHostel = await $fetch(`/api/hostels/all/api/hostels`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
