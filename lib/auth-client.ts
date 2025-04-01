@@ -4,8 +4,11 @@ import * as SecureStore from "expo-secure-store";
 // import { adminClient } from "better-auth/client/plugins";
 
 const authClient = createAuthClient({
+  baseURL:
+    process.env.EXPO_BASE_URL,
   plugins: [
     expoClient({
+      disableCache: false,
       scheme: "kafuhostels",
       storagePrefix: "kafuhostels_auth",
       storage: SecureStore,
@@ -21,6 +24,6 @@ export const {
   updateUser,
   useSession,
   $fetch,
-  getCookie,
+  getSession,
   $ERROR_CODES,
 } = authClient;

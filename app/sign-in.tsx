@@ -13,20 +13,19 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { signIn } from "@/lib/auth-client";
 import { router } from "expo-router";
+import useFirebase from "@/lib/useFirebase";
 
-interface LoginProps {
-  onLogin: (email: string, password: string) => void;
-}
-
-const LoginScreen: React.FC<LoginProps> = () => {
+const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  const { signinWithEmail } = useFirebase();
 
   const fadeAnim = useState(new Animated.Value(0))[0];
   const slideAnim = useState(new Animated.Value(50))[0];
@@ -90,18 +89,15 @@ const LoginScreen: React.FC<LoginProps> = () => {
     const isPasswordValid = validatePassword(password);
 
     if (isEmailValid && isPasswordValid) {
-      const { data, error } = await signIn.email({
-        email,
-        password,
-        rememberMe: true,
-        fetchOptions: { onSuccess: () => router.push("/") },
-      });
-      console.log(error);
-      if (error?.code === "USER_NOT_FOUND") {
-        Alert.alert(
-          "User not found",
-          "The email or password you entered is incorrect. Please try again."
-        );
+      try {
+        setIsLoading(true);
+        await signinWithEmail(email, password);
+        router.push("/");
+      } catch (error) {
+        // Error is already handled in the signinWithEmail function
+        console.log("Login failed:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -199,43 +195,51 @@ const LoginScreen: React.FC<LoginProps> = () => {
                     {passwordError}
                   </Text>
                 )}
-
-                <TouchableOpacity className="self-end mt-1">
-                  <Text className="text-orange-400 text-sm">
-                    Forgot Password?
-                  </Text>
-                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
-                className="mt-5 rounded-lg overflow-hidden"
-                onPress={handleLogin}
-                activeOpacity={0.8}
+                className="items-end mb-5"
+                onPress={() => {
+                  // Handle forgot password
+                  Alert.alert(
+                    "Reset Password",
+                    "Please enter your email address to reset your password.",
+                    [
+                      {
+                        text: "Cancel",
+                        style: "cancel",
+                      },
+                      {
+                        text: "OK",
+                        onPress: () => {
+                          // Send password reset email logic here
+                        },
+                      },
+                    ]
+                  );
+                }}
               >
-                <LinearGradient
-                  colors={["#FF9966", "#FF5E62"]}
-                  className="h-12 justify-center items-center"
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text className="text-white text-base font-bold tracking-wide">
-                    LOGIN
-                  </Text>
-                </LinearGradient>
+                <Text className="text-white/80 text-sm">Forgot Password?</Text>
               </TouchableOpacity>
 
-              {!isKeyboardVisible && (
-                <View className="flex-row justify-center mt-7">
-                  <Text className="text-gray-300 text-sm mr-1">
-                    Don't have an account?
-                  </Text>
-                  <TouchableOpacity onPress={() => router.push("/sign-up")}>
-                    <Text className="text-orange-400 text-sm font-bold">
-                      Sign Up
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+              <TouchableOpacity
+                className={`bg-white/90 rounded-lg p-3 items-center mb-5 ${
+                  isLoading ? "opacity-70" : ""
+                }`}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                <Text className="text-blue-800 font-bold text-base">
+                  {isLoading ? "Signing In..." : "Sign In"}
+                </Text>
+              </TouchableOpacity>
+
+              <View className="flex-row justify-center">
+                <Text className="text-white/80 mr-1">Don't have an account?</Text>
+                <TouchableOpacity onPress={() => router.push("/sign-up")}>
+                  <Text className="text-white font-bold">Sign Up</Text>
+                </TouchableOpacity>
+              </View>
             </LinearGradient>
           </Animated.View>
         </View>

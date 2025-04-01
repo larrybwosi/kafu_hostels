@@ -5,7 +5,7 @@ import { View, Text } from "react-native";
 const StepIndicator: React.FC<StepIndicatorProps> = ({
   currentStep,
   totalSteps,
-  labels,
+  labels = Array.from({ length: totalSteps }, (_, i) => `Step ${i + 1}`),
 }) => (
   <View className="flex-row w-full justify-between mb-6 px-4">
     {Array.from({ length: totalSteps }).map((_, index) => (

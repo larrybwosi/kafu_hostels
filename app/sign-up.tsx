@@ -3,9 +3,8 @@ import FormCard from "@/components/form-card";
 import FormInput from "@/components/form-input";
 import FormPicker from "@/components/form-picker";
 import StepIndicator from "@/components/step-indication";
-import { handleSignUp } from "@/lib/actions";
-import { signIn, signUp } from "@/lib/auth-client";
 import { LoginFormData, loginFormSchema } from "@/lib/types/validation";
+import useFirebase from "@/lib/useFirebase";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -18,6 +17,7 @@ import {
   Text,
   Alert,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 
 const HostelLoginForm: React.FC = () => {
@@ -38,9 +38,11 @@ const HostelLoginForm: React.FC = () => {
     roomPreference: "shared",
   });
 
+  const { signUpWithEmail } = useFirebase();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateStep = (step: number): boolean => {
     let result;
@@ -49,6 +51,7 @@ const HostelLoginForm: React.FC = () => {
     if (step === 1) {
       fieldsToValidate = {
         studentRegNo: formData.studentRegNo,
+        name: formData.name,
         email: formData.email,
         password: formData.password,
         idType: formData.idType,
@@ -59,6 +62,7 @@ const HostelLoginForm: React.FC = () => {
       result = loginFormSchema
         .pick({
           studentRegNo: true,
+          name: true,
           email: true,
           password: true,
           idType: true,
@@ -70,12 +74,14 @@ const HostelLoginForm: React.FC = () => {
       fieldsToValidate = {
         emergencyContact: formData.emergencyContact,
         roomPreference: formData.roomPreference,
+        phone: formData.phone,
       };
 
       result = loginFormSchema
         .pick({
           emergencyContact: true,
           roomPreference: true,
+          phone: true,
         })
         .safeParse(fieldsToValidate);
     }
@@ -107,52 +113,38 @@ const HostelLoginForm: React.FC = () => {
   };
 
   const handleSubmit = async() => {
-    // const formData = {
-    //   email: "akme@dgo.clv",
-    //   emergencyContact: {
-    //     name: "Edyhj",
-    //     phone: "0909090909",
-    //     relation: "some",
-    //   },
-    //   gender: "male",
-    //   idNumber: "12121212",
-    //   idType: "national_id",
-    //   name: "akme",
-    //   password: "123456789",
-    //   phone: "090909090909",
-    //   roomPreference: "shared",
-    //   studentRegNo: "678987",
-    // };
-    // console.log('Testing')
-    if (validateStep(2)) {
+    if (!validateStep(2)) return;
+    
+    try {
+      setIsSubmitting(true);
       
-     const { data, error } = await signUp.email({
-       email: formData.email,
-       password: formData.password,
-       name: formData.name,
-
-     });
-     console.log(data, error);
-
-     if (error?.code === "USER_ALREADY_EXISTS") {
-       Alert.alert(
-         "User already exists",
-         "A user with the provided email already exists. Please log in instead."
-       )
-       return
-     }
-      await handleSignUp(formData).then( async() => {
-        await signIn.email({
-          email: formData.email,
-          password: formData.password,
-          rememberMe: true
-        })
-      }).catch((error) => {
-        console.log(error);
-      }).then((r) => console.log(r)).finally(() => {
-        setCurrentStep(1);
-        router.push("/");
+      // Register user with Firebase and create Sanity document
+      await signUpWithEmail({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        phone: formData.phone,
+        gender: formData.gender,
+        studentRegNo: formData.studentRegNo,
+        idType: formData.idType,
+        idNumber: formData.idNumber,
       });
+      
+      // Reset form and navigate to home
+      setCurrentStep(1);
+      Alert.alert(
+        "Registration Successful",
+        "Your account has been created. You can now sign in.",
+        [{ text: "OK", onPress: () => router.push("/") }]
+      );
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      Alert.alert(
+        "Registration Failed",
+        error.message || "Failed to create your account. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -186,9 +178,6 @@ const HostelLoginForm: React.FC = () => {
         className="flex-1"
       >
         <ScrollView className="flex-1 p-4">
-          <TouchableOpacity onPress={()=>handleSubmit()}>
-            <Text>Submission Text</Text>
-          </TouchableOpacity>
           {/* Header */}
           <View className="items-center mb-6">
             <Image
@@ -198,169 +187,169 @@ const HostelLoginForm: React.FC = () => {
               style={{ width: 80, height: 80 }}
               className="mb-3"
             />
-            <Text className="text-2xl font-bold text-indigo-800 mb-2 text-center">
-              Hostel Booking
+            <Text className="text-2xl font-bold text-indigo-900">
+              {currentStep === 1 ? "Create Account" : "Additional Information"}
             </Text>
-            <Text className="text-gray-600 text-center mb-4">
-              Complete your details to secure your accommodation
+            <Text className="text-gray-500 text-center mt-1">
+              {currentStep === 1
+                ? "Please fill in your basic information"
+                : "Almost there! Just a few more details"}
             </Text>
-
-            {/* Step indicators */}
-            <StepIndicator
-              currentStep={currentStep}
-              totalSteps={2}
-              labels={["Personal", "Emergency"]}
-            />
           </View>
 
-          {currentStep === 1 && (
-            <FormCard title="Personal Information">
-              <FormInput
-                label="Student Registration Number"
-                value={formData.studentRegNo}
-                onChangeText={(text) => updateFormData("studentRegNo", text)}
-                placeholder="Enter your registration number"
-                error={errors.studentRegNo}
-              />
+          {/* Step Indicator */}
+          <StepIndicator currentStep={currentStep} totalSteps={2} />
 
+          {/* Form Steps */}
+          {currentStep === 1 ? (
+            <FormCard>
               <FormInput
-                label="Name"
+                label="Full Name"
+                placeholder="Enter your full name"
                 value={formData.name}
-                onChangeText={(text) => updateFormData("name", text)}
-                placeholder="someone example"
+                onChangeText={(value) => updateFormData("name", value)}
                 error={errors.name}
+                icon="person-outline"
               />
               <FormInput
-                label="Phone Number"
-                value={formData.phone}
-                onChangeText={(text) => updateFormData("phone", text)}
-                placeholder="Enter your phone number"
-                error={errors.phone}
+                label="Student ID"
+                placeholder="Enter your student ID"
+                value={formData.studentRegNo}
+                onChangeText={(value) => updateFormData("studentRegNo", value)}
+                error={errors.studentRegNo}
+                icon="school-outline"
               />
-
               <FormInput
-                label="Email Address"
+                label="Email"
+                placeholder="Enter your email address"
                 value={formData.email}
-                onChangeText={(text) => updateFormData("email", text)}
-                placeholder="someone@example.com"
+                onChangeText={(value) => updateFormData("email", value)}
                 error={errors.email}
                 keyboardType="email-address"
+                autoCapitalize="none"
+                icon="mail-outline"
               />
-
               <FormInput
                 label="Password"
+                placeholder="Choose a password"
                 value={formData.password}
-                onChangeText={(text) => updateFormData("password", text)}
-                placeholder="Create a secure password"
+                onChangeText={(value) => updateFormData("password", value)}
                 error={errors.password}
                 secureTextEntry={!showPassword}
-                isPassword={true}
-                onTogglePassword={() => setShowPassword(!showPassword)}
-                showPassword={showPassword}
+                icon="lock-closed-outline"
+                rightIcon={showPassword ? "eye-off-outline" : "eye-outline"}
+                onRightIconPress={() => setShowPassword(!showPassword)}
               />
-
-              <FormPicker
-                label="ID Type"
-                selectedValue={formData.idType}
-                items={[
-                  { label: "National ID", value: "national_id" },
-                  { label: "Birth Certificate", value: "birth_certificate" },
-                ]}
-                onValueChange={(value) => updateFormData("idType", value)}
-                error={errors.idType}
-              />
-
-              <FormInput
-                label="ID Number"
-                value={formData.idNumber}
-                onChangeText={(text) => updateFormData("idNumber", text)}
-                placeholder="Enter your ID number"
-                error={errors.idNumber}
-              />
-
               <FormPicker
                 label="Gender"
                 selectedValue={formData.gender}
-                items={[
+                onValueChange={(value) => updateFormData("gender", value)}
+                error={errors.gender}
+                icon="people-outline"
+                options={[
                   { label: "Male", value: "male" },
                   { label: "Female", value: "female" },
                   { label: "Other", value: "other" },
                 ]}
-                onValueChange={(value) => updateFormData("gender", value)}
-                error={errors.gender}
               />
-
-              <FormButton
-                title="Next Step"
-                onPress={nextStep}
-                variant="primary"
-                className="mt-4"
+              <FormPicker
+                label="ID Type"
+                selectedValue={formData.idType}
+                onValueChange={(value) => updateFormData("idType", value)}
+                error={errors.idType}
+                icon="card-outline"
+                options={[
+                  { label: "National ID", value: "national_id" },
+                  { label: "Passport", value: "passport" },
+                  { label: "Driver's License", value: "drivers_license" },
+                ]}
               />
+              <FormInput
+                label="ID Number"
+                placeholder="Enter your ID number"
+                value={formData.idNumber}
+                onChangeText={(value) => updateFormData("idNumber", value)}
+                error={errors.idNumber}
+                icon="document-text-outline"
+              />
+              <FormButton title="Next" onPress={nextStep} />
             </FormCard>
-          )}
-
-          {currentStep === 2 && (
-            <>
-              <FormCard title="Emergency Contact">
-                <FormInput
-                  label="Contact Name"
-                  value={formData.emergencyContact.name}
-                  onChangeText={(text) => updateEmergencyContact("name", text)}
-                  placeholder="eg. Larry Dean"
-                  error={errors["emergencyContact.name"]}
-                />
-
-                <FormInput
-                  label="Relationship"
-                  value={formData.emergencyContact.relation}
-                  onChangeText={(text) =>
-                    updateEmergencyContact("relation", text)
-                  }
-                  placeholder="eg. Father"
-                  error={errors["emergencyContact.relationship"]}
-                />
-
-                <FormInput
-                  label="Contact Number"
-                  value={formData.emergencyContact.phone}
-                  onChangeText={(text) => updateEmergencyContact("phone", text)}
-                  placeholder="07 000 0000"
-                  error={errors["emergencyContact.contactNumber"]}
-                  keyboardType="phone-pad"
-                />
-              </FormCard>
-
-              <FormCard title="Room Preference">
-                <FormPicker
-                  label="Room Type"
-                  selectedValue={formData.roomPreference}
-                  items={[
-                    { label: "Single Room", value: "single" },
-                    { label: "Shared Room", value: "shared" },
-                  ]}
-                  onValueChange={(value) =>
-                    updateFormData("roomPreference", value)
-                  }
-                  error={errors.roomPreference}
-                />
-              </FormCard>
-
-              <View className="flex-row justify-between mb-6 mt-2">
+          ) : (
+            <FormCard>
+              <FormInput
+                label="Phone Number"
+                placeholder="Enter your phone number"
+                value={formData.phone}
+                onChangeText={(value) => updateFormData("phone", value)}
+                error={errors.phone}
+                keyboardType="phone-pad"
+                icon="call-outline"
+              />
+              <FormInput
+                label="Emergency Contact Name"
+                placeholder="Enter emergency contact name"
+                value={formData.emergencyContact.name}
+                onChangeText={(value) => updateEmergencyContact("name", value)}
+                error={errors["emergencyContact.name"]}
+                icon="person-outline"
+              />
+              <FormInput
+                label="Emergency Contact Relation"
+                placeholder="Enter relationship (e.g., Parent, Sibling)"
+                value={formData.emergencyContact.relation}
+                onChangeText={(value) => updateEmergencyContact("relation", value)}
+                error={errors["emergencyContact.relation"]}
+                icon="people-outline"
+              />
+              <FormInput
+                label="Emergency Contact Phone"
+                placeholder="Enter emergency contact phone"
+                value={formData.emergencyContact.phone}
+                onChangeText={(value) => updateEmergencyContact("phone", value)}
+                error={errors["emergencyContact.phone"]}
+                keyboardType="phone-pad"
+                icon="call-outline"
+              />
+              <FormPicker
+                label="Room Preference"
+                selectedValue={formData.roomPreference}
+                onValueChange={(value) => updateFormData("roomPreference", value)}
+                error={errors.roomPreference}
+                icon="bed-outline"
+                options={[
+                  { label: "Shared Room", value: "shared" },
+                  { label: "Private Room", value: "private" },
+                  { label: "Any Room Type", value: "any" },
+                ]}
+              />
+              <View className="flex-row justify-between gap-2">
                 <FormButton
                   title="Back"
                   onPress={prevStep}
-                  variant="secondary"
-                  className="flex-1 mr-2"
+                  style={{ flex: 1 }}
+                  color="gray"
                 />
                 <FormButton
-                  title="Submit Application"
+                  title={isSubmitting ? "Registering..." : "Register"}
                   onPress={handleSubmit}
-                  variant="primary"
-                  className="flex-1 ml-2"
-                />
+                  style={{ flex: 1 }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting && (
+                    <ActivityIndicator size="small" color="white" style={{ marginLeft: 5 }} />
+                  )}
+                </FormButton>
               </View>
-            </>
+            </FormCard>
           )}
+
+          {/* Sign In Link */}
+          <View className="mt-6 mb-10 flex-row justify-center">
+            <Text className="text-gray-600">Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.push("/sign-in")}>
+              <Text className="text-indigo-600 font-bold">Sign In</Text>
+            </TouchableOpacity>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

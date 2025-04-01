@@ -26,10 +26,7 @@
     "plugins": [
       "expo-secure-store",
       [
-        "expo-router",
-        {
-          "origin": "http://localhost:8081"
-        }
+        "expo-router"
       ],
       [
         "expo-splash-screen",

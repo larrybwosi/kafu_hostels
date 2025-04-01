@@ -1,4 +1,3 @@
-
 // types.ts
 export interface FormInputProps {
   label: string;
@@ -11,6 +10,10 @@ export interface FormInputProps {
   isPassword?: boolean;
   onTogglePassword?: () => void;
   showPassword?: boolean;
+  icon?: string;
+  rightIcon?: string;
+  onRightIconPress?: () => void;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
 }
 
 export interface PickerItemProps {
@@ -21,13 +24,31 @@ export interface PickerItemProps {
 export interface FormPickerProps {
   label: string;
   selectedValue: string;
-  items: PickerItemProps[];
+  items?: PickerItemProps[];
+  options?: PickerItemProps[];
   onValueChange: (value: string) => void;
   error?: string;
+  icon?: string;
 }
 
 export interface StepIndicatorProps {
   currentStep: number;
   totalSteps: number;
-  labels: string[];
+  labels?: string[];
+}
+
+export interface FormCardProps {
+  children: React.ReactNode;
+  title?: string;
+}
+
+export interface FormButtonProps {
+  title: string;
+  onPress: () => void;
+  variant?: string;
+  className?: string;
+  disabled?: boolean;
+  style?: any;
+  color?: string;
+  children?: React.ReactNode;
 }
