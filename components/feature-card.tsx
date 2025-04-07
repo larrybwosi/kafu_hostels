@@ -3,20 +3,29 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import AvailabilityTag from "./availability-tag";
+import { Hostel } from "@/lib/actions";
+import { router } from "expo-router";
 
 interface HostelCardProps {
   hostel: Hostel;
-  onPress: (hostel: Hostel) => void;
 }
 
 // Featured Hostel Card Component
-const FeaturedHostelCard = ({ hostel, onPress }: HostelCardProps) => {
+const FeaturedHostelCard = ({ hostel }: HostelCardProps) => {
   return (
     <Animated.View
-      entering={FadeInRight.delay(Number(hostel.id) * 100).duration(400)}
+      entering={FadeInRight.delay(Number(hostel._id) * 100).duration(400)}
       className="mr-4 w-72 rounded-xl overflow-hidden shadow-lg bg-white"
     >
-      <TouchableOpacity onPress={() => onPress(hostel)} activeOpacity={0.9}>
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/id",
+            params: { id: hostel._id },
+          })
+        }
+        activeOpacity={0.9}
+      >
         <View className="relative">
           <Image
             source={{ uri: hostel.imageUrl }}

@@ -2,8 +2,6 @@ import { $fetch } from "./auth-client";
 import { client } from "./sanity/client";
 import { LoginFormData } from "./types/validation";
 import { useFetch } from "./useFetch";
-import "react-native-url-polyfill/auto";
-import { runSeed } from "./sanity/seed";
 import imageUrlBuilder from "@sanity/image-url";
 
 const endpoint =
@@ -11,7 +9,44 @@ const endpoint =
     ? "https://kafu-hostels.expo.app"
     : "http://localhost:8081";
 
-    
+export interface Hostel {
+      _id: string;
+      _type: string;
+      name: string;
+      description: string;
+      type: string;
+      gender: string;
+      price: number;
+      distance: number;
+      rating: number;
+      reviews: number;
+      featured: boolean;
+      availability: boolean;
+      totalRooms: number;
+      roomCapacity: number;
+      currentOccupancy: number;
+      mainImageUrl: string;
+      images: string[];
+      wardenInfo: {
+        _id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        phone: string;
+        profileImageUrl: string;
+      };
+      contact: {
+        email: string;
+        phone: string;
+        website?: string;
+      };
+      location: {
+        address: string;
+        coordinates: { lat: number; lng: number };
+      };
+      rules: string[];
+      amenities: string[];
+    }
 
 // Initialize the image URL builder
 const builder = imageUrlBuilder(client);
@@ -251,16 +286,6 @@ const createHostel = async (hostel: any) => {
   return newHostel;
 };
 
-// Function to seed hostels from data.ts to Sanity
-const seedHostels = async () => {
-  try {
-    return await runSeed();
-  } catch (error) {
-    console.error("Error seeding hostels:", error);
-    throw error;
-  }
-};
-
 const useGetAllHostels = () => {
   return useFetch({
     fn: getAllHostels,
@@ -287,6 +312,5 @@ export {
   createHostel,
   handleSignUp,
   handleProfileUpdate,
-  seedHostels,
   urlFor
 };

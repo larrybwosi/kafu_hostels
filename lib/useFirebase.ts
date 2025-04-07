@@ -1,9 +1,10 @@
-import FirebaseAuth from "@react-native-firebase/auth";
 import { client } from "./sanity/client";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { Alert } from "react-native";
 import { auth } from "./firebase";
-// import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
+
+// import { GoogleSignin } from "@react-native-google-signin/google-signin";
 
 // GoogleSignin.configure({
 //   // client ID that is on google-services.json / GoogleService-Info.plist
@@ -41,11 +42,11 @@ const useFirebase = () => {
     try {
       // 1. Create user in Firebase Auth
       const { email, password, name, ...otherData } = userData;
-      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
       // 2. Update display name in Firebase
-      await user.updateProfile({
+      await updateProfile(user, {
         displayName: name,
       });
       
@@ -77,7 +78,8 @@ const useFirebase = () => {
    */
   const signinWithEmail = async (email: string, password: string) => {
     try {
-      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log(userCredential)
       return userCredential.user;
     } catch (error: any) {
       console.error("Error during sign in:", error);
@@ -115,6 +117,7 @@ const useFirebase = () => {
   const getCurrentUserData = async () => {
     try {
       const currentUser = auth.currentUser;
+      console.log('current user', currentUser)
       if (!currentUser) return null;
       
       // Fetch user data from Sanity using the firebaseId

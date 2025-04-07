@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,25 +9,15 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
-  Dimensions,
   Platform,
   KeyboardAvoidingView,
   Modal,
-  FlatList,
-  Alert,
-  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import FeaturedHostelCard from "@/components/feature-card";
 import HostelCard from "@/components/hostel-card";
-import { router } from "expo-router";
-import { seedHostels, useGetAllHostels } from "@/lib/actions";
+import { Hostel, useGetAllHostels } from "@/lib/actions";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import seedAllHostels from "@/lib/sanity/seed";
-
-// Get screen dimensions for responsive sizing
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Filter options
 const filterOptions = {
@@ -132,18 +122,10 @@ const SortModal = ({ visible, onClose, sortBy, setSortBy }: SortModalProps) => {
 };
 
 // Empty State Component
-const EmptyState = ({ message, onSeed }: { message: string, onSeed?: () => void }) => (
+const EmptyState = ({ message }: { message: string }) => (
   <View className="justify-center items-center py-10">
     <Ionicons name="search" size={48} color="#D1D5DB" />
     <Text className="text-gray-500 text-center mt-3 px-6 mb-4">{message}</Text>
-    {onSeed && (
-      <TouchableOpacity
-        onPress={onSeed}
-        className="bg-indigo-600 py-2 px-6 rounded-lg"
-      >
-        <Text className="text-white font-medium">Seed Demo Data</Text>
-      </TouchableOpacity>
-    )}
   </View>
 );
 
@@ -158,15 +140,13 @@ const CampusHostels = () => {
   const [sortBy, setSortBy] = useState("rating");
   const [refreshing, setRefreshing] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
-  const [seedingHostels, setSeedingHostels] = useState(false);
-  const insets = useSafeAreaInsets();
 
+  console.log('hostels');
   // Featured hostels
   const featuredHostels = filteredHostels.filter((hostel) => hostel.featured);
-
+  
   useEffect(() => {
     if (!hostels) return;
-
     // Filter hostels based on search query and active filters
     let result = [...hostels]; // Create a new array to avoid mutating the original data
 
@@ -218,14 +198,6 @@ const CampusHostels = () => {
     setFilteredHostels(result);
   }, [hostels, searchQuery, activeType, activeGender, sortBy]);
 
-  const handleHostelPress = (hostel) => {
-    // Navigate to the hostel detail page
-    router.push({
-      pathname: "/id",
-      params: { id: hostel._id },
-    });
-  };
-
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -243,45 +215,6 @@ const CampusHostels = () => {
     setSearchQuery("");
   };
 
-  const handleSeedHostels = async () => {
-    try {
-      setSeedingHostels(true);
-      
-      // Show alert to confirm
-      Alert.alert(
-        "Seed Hostels",
-        "This will add sample hostels to the database. Continue?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Continue",
-            onPress: async () => {
-              try {
-                await seedHostels();
-                Alert.alert("Success", "Hostels seeded successfully!");
-                // Refetch after seeding
-                await refetch({});
-              } catch (error) {
-                Alert.alert("Error", 
-                  error instanceof Error 
-                    ? error.message 
-                    : "Failed to seed hostels. Check console for details."
-                );
-              } finally {
-                setSeedingHostels(false);
-              }
-            }
-          }
-        ]
-      );
-    } catch (error) {
-      console.error("Error seeding hostels:", error);
-      Alert.alert("Error", "Failed to seed hostels. Check console for details.");
-    } finally {
-      setSeedingHostels(false);
-    }
-  };
-
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
@@ -290,9 +223,6 @@ const CampusHostels = () => {
         className="flex-1"
         keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <Pressable onPress={async() => await seedAllHostels()}>
-          <Text>Seed Data </Text>
-        </Pressable>
         <View className="flex-1">
           {/* Header + Search */}
           <View className="px-4 pt-3 pb-4 bg-white shadow-sm">
@@ -417,49 +347,6 @@ const CampusHostels = () => {
             ) : filteredHostels.length === 0 && !searchQuery ? (
               <EmptyState
                 message="No hostels available. Seed some demo data to get started."
-                onSeed={() => {
-                  Alert.alert(
-                    "Seed Hostels",
-                    "Would you like to seed demo hostel data?",
-                    [
-                      {
-                        text: "Cancel",
-                        style: "cancel",
-                      },
-                      {
-                        text: "Seed",
-                        onPress: async () => {
-                          try {
-                            console.log("Seeding hostels...");
-                            const response = await fetch(
-                              `/api/hostels/seed`
-                            );
-                            if (response.ok) {
-                              const result = await response.json();
-                              Alert.alert(
-                                "Success",
-                                `Successfully seeded ${result.count} hostels.`,
-                                [{ text: "OK", onPress: () => refetch() }]
-                              );
-                            } else {
-                              const errorData = await response.json();
-                              Alert.alert(
-                                "Error",
-                                errorData.message || "Failed to seed hostels"
-                              );
-                            }
-                          } catch (error) {
-                            console.error("Error seeding hostels:", error);
-                            Alert.alert(
-                              "Error",
-                              "Failed to seed hostels. Please try again."
-                            );
-                          }
-                        },
-                      },
-                    ]
-                  );
-                }}
               />
             ) : filteredHostels.length === 0 && searchQuery ? (
               <EmptyState
@@ -483,7 +370,6 @@ const CampusHostels = () => {
                         <FeaturedHostelCard
                           key={hostel._id}
                           hostel={hostel}
-                          onPress={() => handleHostelPress(hostel)}
                         />
                       ))}
                     </ScrollView>
@@ -500,33 +386,12 @@ const CampusHostels = () => {
                       <HostelCard
                         key={hostel._id}
                         hostel={hostel}
-                        onPress={() => handleHostelPress(hostel)}
                       />
                     ))}
                   </View>
                 </View>
               </>
             )}
-
-            {/* Admin Actions (for debug/testing) */}
-            <View className="px-4 py-6">
-              <TouchableOpacity
-                className="bg-gray-200 py-3 rounded-full items-center mb-8"
-                onPress={handleSeedHostels}
-                disabled={seedingHostels}
-              >
-                <View className="flex-row items-center">
-                  <Ionicons
-                    name="cloud-upload-outline"
-                    size={18}
-                    color="#4B5563"
-                  />
-                  <Text className="ml-2 text-gray-700 font-medium">
-                    {seedingHostels ? "Seeding..." : "Seed Hostels Data"}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
           </ScrollView>
 
           {/* Sort Modal */}

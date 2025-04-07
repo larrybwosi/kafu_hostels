@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "110780866127",
+    "project_id": "kafu-hostels",
+    "storage_bucket": "kafu-hostels.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:110780866127:android:8fdb9b76b9cfeed783543a",
+        "android_client_info": {
+          "package_name": "com.kafuhostels"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcIcvNuzr2I8k2htttuIbYcoNLbDKke68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

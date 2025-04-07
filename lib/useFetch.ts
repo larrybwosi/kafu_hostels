@@ -11,7 +11,7 @@ interface UseFetchReturn<T, P> {
   data: T | null;
   loading: boolean;
   error: string | null;
-  refetch: (newParams: P) => Promise<void>;
+  refetch: (newParams?: P) => Promise<void>;
 }
 
 export const useFetch = <T, P extends Record<string, string | number>>({

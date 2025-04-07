@@ -8,11 +8,9 @@ import {
   Dimensions,
   StyleSheet,
   Animated,
-  Platform,
   StatusBar,
   SafeAreaView,
   Linking,
-  FlatList,
   ActivityIndicator,
   Alert,
 } from "react-native";
@@ -23,6 +21,8 @@ import Carousel from "@/components/ui/carousel";
 import { useGetHostel } from "@/lib/actions";
 import { formatCurrency } from "@/lib/currency";
 import { useSession } from "@/lib/auth-client";
+import useFirebase from "@/lib/useFirebase";
+import { useFirebaseContext } from "@/lib/firebase.context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -121,7 +121,13 @@ const HostelDetail = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const scrollY = useRef(new Animated.Value(0)).current;
   const { data:hostel, loading, error, refetch } = useGetHostel(id as string);
-  const { data, isPending } = useSession()
+  
+  
+  const {
+    user,
+    sanityUser,
+    isLoading: authLoading,
+  } = useFirebaseContext();
 
   // Mock reviews data
   const reviews = [
@@ -154,7 +160,7 @@ const HostelDetail = () => {
     extrapolate: "clamp",
   });
 
-  if (loading || isPending) {
+  if (loading ) {
     return (
       <View className="flex-1 items-center justify-center">
         <Text>Loading...</Text>
@@ -173,7 +179,7 @@ const HostelDetail = () => {
   // Handle booking
   
   const handleBooking = (id: string) => {
-    if(!data?.user.email) {
+    if(!sanityUser?.email) {
       Alert.alert(
         "Login Required",
         "You need to be logged in to book a hostel.",
@@ -181,8 +187,8 @@ const HostelDetail = () => {
       )
       return
     }
-    //@ts-ignore
-    if (hostel.gender !== data?.user?.gender) {
+    
+    if (hostel.gender !== sanityUser?.gender) {
       Alert.alert(
         "Gender Mismatch",
         "You cannot book a hostel for a different gender.",
@@ -191,6 +197,7 @@ const HostelDetail = () => {
       return
     }
     router.push(`/booking?id=${id}`);
+    
   };
 
   // Handle contact
@@ -436,7 +443,7 @@ const HostelDetail = () => {
       </Animated.ScrollView>
 
       {/* Booking Button */}
-      <BookingButton price={hostel.price.toString()} onPress={()=>handleBooking(hostel?.id)} />
+      <BookingButton price={hostel.price.toString()} onPress={()=>handleBooking(hostel?._id)} />
     </SafeAreaView>
   );
 };

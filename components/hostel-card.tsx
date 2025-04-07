@@ -2,19 +2,20 @@ import { Image, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AvailabilityTag from "./availability-tag";
 import { FontAwesome5, MaterialIcons } from "@expo/vector-icons";
+import { Hostel } from "@/lib/actions";
+import { router } from "expo-router";
 
 interface HostelCardProps {
   hostel: Hostel;
-  onPress: (hostel: Hostel) => void;
 }
 
-const HostelCard = ({ hostel, onPress }: HostelCardProps) => {
+const HostelCard = ({ hostel }: HostelCardProps) => {
   return (
     <Animated.View
-      entering={FadeInDown.delay(Number(hostel.id) * 100).duration(400)}
+      entering={FadeInDown.delay(Number(hostel._id) * 100).duration(400)}
       className="mb-4 rounded-xl overflow-hidden shadow-lg bg-white w-full max-w-screen-sm mx-auto"
     >
-      <TouchableOpacity onPress={() => onPress(hostel)} activeOpacity={0.9}>
+      <TouchableOpacity onPress={() => router.navigate(`/id?id=${hostel._id}`)} activeOpacity={0.9}>
         <View className="flex-row">
           {/* Image Container */}
           <View className="relative w-1/3 sm:w-1/4 md:w-1/5 lg:w-1/6">

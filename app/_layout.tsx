@@ -27,18 +27,16 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <FirebaseProvider>
       <Stack>
-        <FirebaseProvider>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="id" options={{ headerShown: false, presentation: 'modal' }} />
-          <Stack.Screen name="booking" options={{ headerShown: false, presentation: 'modal' }} />
-          <Stack.Screen name="add" options={{ headerShown: false, presentation: 'modal' }} />
-          <Stack.Screen name="sign-in" options={{ headerShown: false, presentation: 'modal' }} />
-          <Stack.Screen name="sign-up" options={{ headerShown: false, presentation: 'modal' }} />
-        </FirebaseProvider>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="id" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="booking" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="add" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="sign-in" options={{ headerShown: false, presentation: 'modal' }} />
+        <Stack.Screen name="sign-up" options={{ headerShown: false, presentation: 'modal' }} />
+        <StatusBar style="auto" />
       </Stack>
-      <StatusBar style="auto" />
-    </>
+    </FirebaseProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import { router } from "expo-router";
 import EditProfileModal from "@/components/edit-profile-modal";
 import { handleProfileUpdate, useGetUserData } from "@/lib/actions";
 import { formatCurrency } from "@/lib/currency";
-import { FirebaseContext } from "@/lib/firebase.context";
+import { useFirebaseContext } from "@/lib/firebase.context";
 import useFirebase from "@/lib/useFirebase";
 
 type TabType = "current" | "past";
@@ -27,13 +27,15 @@ const ProfileScreen = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   
   // Get Firebase and Sanity user data
-  const { user, sanityUser, isLoading: authLoading, refreshSanityUser } = useContext(FirebaseContext);
+  const {
+    user,
+    sanityUser,
+    isLoading: authLoading,
+    refreshSanityUser,
+  } = useFirebaseContext();
   const { signout } = useFirebase();
-  
-  // Get booking data from API
-  const { data: userData, loading: apiLoading, error, refetch } = useGetUserData();
 
-  const isLoading = authLoading || apiLoading;
+  const isLoading = authLoading;
 
   const formatDate = (dateString: string) => {
     if (!dateString) return 'N/A';
@@ -114,7 +116,7 @@ const ProfileScreen = () => {
     );
   }
 
-  if (!user) {
+  if (!sanityUser) {
     return (
       <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center">
         <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
@@ -136,22 +138,22 @@ const ProfileScreen = () => {
   }
 
   // Combine Firebase auth user, Sanity user, and API data
-  const displayName = user.displayName || sanityUser?.firstName || 'User';
-  const displayEmail = user.email || sanityUser?.email || '';
+  const displayName = user?.displayName || sanityUser?.firstName || 'User';
+  const displayEmail = user?.email || sanityUser?.email || '';
   const profileImage = sanityUser?.profileImage?.asset?._ref 
     ? `https://cdn.sanity.io/images/${process.env.EXPO_SANITY_PROJECT_ID}/${process.env.EXPO_SANITY_DATASET}/${sanityUser.profileImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg')}`
     : "https://randomuser.me/api/portraits/lego/1.jpg";
   
   const createdDate = sanityUser?.createdAt || user.metadata.creationTime || new Date().toISOString();
-  const phone = sanityUser?.phone || userData?.phone || 'Not provided';
-  const gender = sanityUser?.gender || userData?.gender || 'Not specified';
-  const emergencyContact = userData?.emergencyContact || null;
-  const studentId = sanityUser?.studentRegNo || userData?.studentId || 'Not provided';
+  const phone = sanityUser?.phone || 'Not provided';
+  const gender = sanityUser?.gender || 'Not specified';
+  const emergencyContact = null;
+  const studentId = sanityUser?.studentRegNo || 'Not provided';
   
   // Get current and past bookings
-  const bookings = userData?.bookingsData || [];
-  const currentBookings = bookings.filter(booking => booking.status === "active");
-  const pastBookings = bookings.filter(booking => booking.status === "completed");
+  const bookings = [];
+  const currentBookings = bookings?.filter(booking => booking.status === "active");
+  const pastBookings = bookings?.filter(booking => booking.status === "completed");
 
   const renderProfileHeader = () => (
     <Animated.View
@@ -173,12 +175,12 @@ const ProfileScreen = () => {
               Member since {formatDate(createdDate)}
             </Text>
             {studentId !== 'Not provided' && (
-              <>
+              <View>
                 <View className="h-2 w-2 rounded-full bg-gray-300 mx-2" />
                 <Text className="text-gray-500 text-xs">
                   ID: {studentId}
                 </Text>
-              </>
+              </View>
             )}
           </View>
         </View>
@@ -242,7 +244,7 @@ const ProfileScreen = () => {
           <Text className="text-gray-500 text-xs mb-2">Emergency Contact</Text>
           <View className="flex-row items-center">
             <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center mr-2">
-              <Ionicons name="person-outline" size={14} color="#4B5563" />
+              <Ionicons name="person-outline" size={14} color="#6b7280" />
             </View>
             <View className="flex-1">
               <Text className="text-gray-800 font-medium">
@@ -257,7 +259,7 @@ const ProfileScreen = () => {
             </View>
             <TouchableOpacity 
               className="bg-indigo-50 p-2 rounded-full"
-              onPress={() => Alert.alert("Call", `Call ${emergencyContact.name} at ${emergencyContact.phone}`)}
+              onPress={() => Alert.alert("Call", `Call ${emergencyContact?.name} at ${emergencyContact.phone}`)}
             >
               <Ionicons name="call-outline" size={14} color="#4F46E5" />
             </TouchableOpacity>
@@ -276,37 +278,37 @@ const ProfileScreen = () => {
 
       <View className="flex-row bg-gray-100 rounded-lg p-1 mb-4">
         <TouchableOpacity
-          className={`flex-1 py-2 rounded-md ${
-            activeTab === "current" ? "bg-white shadow" : ""
-          }`}
+          className={`flex-1 py-2 rounded-md`}
+          style={{
+            backgroundColor: activeTab === "current" ? "#fff" : "#CDCDE0",
+          }}
           onPress={() => setActiveTab("current")}
         >
           <Text
-            className={`text-center font-medium ${
-              activeTab === "current" ? "text-indigo-600" : "text-gray-500"
-            }`}
+            className={`text-center font-medium`}
+            style={{ color: activeTab === "current" ? "#4F46E5" : "#4B5563" }}
           >
             Current
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`flex-1 py-2 rounded-md ${
-            activeTab === "past" ? "bg-white shadow" : ""
-          }`}
+          className={`flex-1 py-2 rounded-md`}
+          style={{ backgroundColor: activeTab === "past" ? "#fff" : "#CDCDE0" }}
           onPress={() => setActiveTab("past")}
         >
           <Text
             className={`text-center font-medium ${
               activeTab === "past" ? "text-indigo-600" : "text-gray-500"
             }`}
+            style={{ color: activeTab === "past" ? "#4F46E5" : "#6b7280" }}
           >
             Past
           </Text>
         </TouchableOpacity>
       </View>
 
-      {activeTab === "current" && (
-        currentBookings.length > 0 ? (
+      {activeTab === "current" &&
+        (currentBookings.length > 0 ? (
           currentBookings.map((booking) => renderCurrentBooking(booking))
         ) : (
           <View className="py-6 items-center">
@@ -315,11 +317,10 @@ const ProfileScreen = () => {
               You don't have any current bookings
             </Text>
           </View>
-        )
-      )}
+        ))}
 
-      {activeTab === "past" && (
-        pastBookings.length > 0 ? (
+      {activeTab === "past" &&
+        (pastBookings.length > 0 ? (
           pastBookings.map((booking) => renderPastBooking(booking))
         ) : (
           <View className="py-6 items-center">
@@ -328,8 +329,7 @@ const ProfileScreen = () => {
               No past booking history
             </Text>
           </View>
-        )
-      )}
+        ))}
     </Animated.View>
   );
 
@@ -553,7 +553,7 @@ const ProfileScreen = () => {
 
       <TouchableOpacity 
         className="flex-row items-center py-3 border-b border-gray-100"
-        onPress={() => router.push("/help")}
+        onPress={() => router.push("/")}
       >
         <View className="w-8 h-8 rounded-full bg-indigo-100 items-center justify-center mr-3">
           <Ionicons name="help-circle-outline" size={16} color="#4F46E5" />
@@ -589,7 +589,7 @@ const ProfileScreen = () => {
         {renderAccountActions()}
       </ScrollView>
 
-      {isEditModalVisible && (
+      {/* {isEditModalVisible && (
         <EditProfileModal
           visible={isEditModalVisible}
           onClose={() => setIsEditModalVisible(false)}
@@ -601,7 +601,7 @@ const ProfileScreen = () => {
             gender: gender,
           }}
         />
-      )}
+      )} */}
     </SafeAreaView>
   );
 };

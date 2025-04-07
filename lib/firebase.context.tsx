@@ -1,8 +1,8 @@
-import { createContext, useEffect, useState } from "react";
-import FirebaseAuth from "@react-native-firebase/auth";
-import { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import { createContext, useContext, useEffect, useState } from "react";
 import { client } from "./sanity/client";
+import { onAuthStateChanged, User } from "firebase/auth";
 import { auth } from "./firebase";
+
 
 interface SanityUser {
   _id: string;
@@ -27,10 +27,10 @@ interface SanityUser {
 }
 
 interface FirebaseContextType {
-  user: FirebaseAuthTypes.User | null;
+  user: User | null;
   sanityUser: SanityUser | null;
   isLoading: boolean;
-  setUser: React.Dispatch<React.SetStateAction<FirebaseAuthTypes.User | null>>;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   refreshSanityUser: () => Promise<void>;
 }
 
@@ -45,8 +45,7 @@ export const FirebaseContext = createContext<FirebaseContextType>({
 type Props = { children: React.ReactNode };
 
 export const FirebaseProvider: React.FC<Props> = ({ children }) => {
-  const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [sanityUser, setSanityUser] = useState<SanityUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -78,26 +77,23 @@ export const FirebaseProvider: React.FC<Props> = ({ children }) => {
     }
   };
 
-  // Handle Firebase auth state changes
-  const onAuthStateChanged = async (firebaseUser: FirebaseAuthTypes.User | null) => {
-    setUser(firebaseUser);
-    
-    if (firebaseUser) {
-      await fetchSanityUser(firebaseUser.uid);
-    } else {
-      setSanityUser(null);
-      setIsLoading(false);
-    }
-    
-    if (initializing) setInitializing(false);
-  };
 
   useEffect(() => {
-    const subscriber = auth.onAuthStateChanged(onAuthStateChanged);
+    const subscriber = onAuthStateChanged(auth, async(user) => {
+      if (user) {
+        setUser(user);
+        const uid = user.uid;
+        
+        await fetchSanityUser(uid);
+        // ...
+      } else {
+      setSanityUser(null);
+      setIsLoading(false);
+      }
+    });
     return subscriber;
   }, []);
 
-  if (initializing) return null;
 
   return (
     <FirebaseContext.Provider value={{ 
@@ -110,4 +106,12 @@ export const FirebaseProvider: React.FC<Props> = ({ children }) => {
       {children}
     </FirebaseContext.Provider>
   );
+};
+
+export const useFirebaseContext = () => {
+  const context = useContext(FirebaseContext);
+  if (context === undefined) {
+    throw new Error("useFirebase must be used within a FirebaseProvider");
+  }
+  return context;
 };
