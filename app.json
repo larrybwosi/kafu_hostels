@@ -21,7 +21,7 @@
     },
     "web": {
       "bundler": "metro",
-    "output": "server",
+      "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -37,7 +37,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true
@@ -50,9 +52,7 @@
         "projectId": "db7903c1-fdea-4a74-b683-396a04f3f02f"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.2.0",
     "updates": {
       "url": "https://u.expo.dev/db7903c1-fdea-4a74-b683-396a04f3f02f"
     }
