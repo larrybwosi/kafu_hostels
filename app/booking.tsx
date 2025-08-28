@@ -114,7 +114,7 @@ const SemesterHostelBookingScreen = () => {
     // Simulate payment initiation
     Alert.alert(
       "Payment Initiated",
-      `A payment request of $${paymentAmount} has been sent to your mobile number. Complete the payment to confirm your booking.`
+      `A payment request of KSH${paymentAmount} has been sent to your mobile number. Complete the payment to confirm your booking.`
       // [{ text: "OK", onPress: () => navigation.navigate('BookingConfirmation', { booking: bookingDetails }) }]
     );
   };
@@ -280,7 +280,7 @@ const SemesterHostelBookingScreen = () => {
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Total Fee:</Text>
                 <Text className="font-medium text-gray-800">
-                  ${hostelDetails?.price || 0}
+                  KSH: {hostelDetails?.price || 0}
                 </Text>
               </View>
             </View>
@@ -307,7 +307,7 @@ const SemesterHostelBookingScreen = () => {
               </Text>
               <View className="flex-row items-center">
                 <View className="bg-white/60 h-12 w-12 rounded-l-lg items-center justify-center border border-pink-200">
-                  <Text className="font-bold text-gray-700">$</Text>
+                  <Text className="font-bold text-gray-700">KSH: </Text>
                 </View>
                 <TextInput
                   className="flex-1 h-12 bg-white/60 rounded-r-lg px-3 border border-l-0 border-pink-200 text-gray-700"
@@ -317,10 +317,10 @@ const SemesterHostelBookingScreen = () => {
               </View>
               <View className="flex-row justify-between mt-2">
                 <Text className="text-xs text-gray-500">
-                  Minimum: ${minPaymentAmount}
+                  Minimum: KSH: {minPaymentAmount}
                 </Text>
                 <Text className="text-xs text-gray-500">
-                  Full amount: ${hostelDetails?.price || 0}
+                  Full amount: KSH: {hostelDetails?.price || 0}
                 </Text>
               </View>
             </View>
@@ -503,21 +503,21 @@ const SemesterHostelBookingScreen = () => {
               <View className="flex-row justify-between mb-1">
                 <Text className="text-gray-600">Total Semester Fee</Text>
                 <Text className="text-gray-700">
-                  ${hostelDetails?.price || 0}
+                  KSH: {hostelDetails?.price || 0}
                 </Text>
               </View>
 
               <View className="flex-row justify-between mb-1">
                 <Text className="text-gray-600">Initial Payment</Text>
                 <Text className="text-green-600 font-medium">
-                  ${paymentAmount}
+                  KSH: {paymentAmount}
                 </Text>
               </View>
 
               <View className="flex-row justify-between">
                 <Text className="text-gray-600">Remaining Balance</Text>
                 <Text className="text-orange-600 font-medium">
-                  ${hostelDetails?.price || 0 - paymentAmount}
+                  KSH: {hostelDetails?.price || 0 - paymentAmount}
                 </Text>
               </View>
             </View>
@@ -536,7 +536,7 @@ const SemesterHostelBookingScreen = () => {
             disabled={!acceptRules || !isMobileValid() || !isPaymentValid()}
           >
             <Text className="text-white font-bold text-center text-lg">
-              Confirm & Pay ${paymentAmount}
+              Confirm & Pay KSH: {paymentAmount}
             </Text>
             <Text className="text-white/80 text-xs text-center mt-1">
               Payment will be processed via{" "}
