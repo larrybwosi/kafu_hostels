@@ -131,7 +131,7 @@ const HostelLoginForm: React.FC = () => {
       });
       
       // Reset form and navigate to home
-      setCurrentStep(1);
+      // setCurrentStep(1);
       Alert.alert(
         "Registration Successful",
         "Your account has been created. You can now sign in.",

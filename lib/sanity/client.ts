@@ -12,5 +12,5 @@ export const client = createClient({
   apiVersion,
   useCdn: false, // For real-time data
   token:
-    "sktcJVGLqDrWfdOGGIdbOtbQAQZZ5RSMrkofyDr1euIc0F9v4QM4B5PFTCPqCjMrhtcy8hp4p8nTAjRujpYij3UvtTSMvAsz6UmKEzGdfGIFuUAmjYZfn9pYTeeULPjohczwAOTVADF1I86ST0rO80nj8MI7s7yeV5p8To84G466GmzB8sky", // Only needed for write operations
+    "skZqBaDo26LDEBL3sIxHDFq9dZrp90ZPsrYbnED563vr9HfmrjdY19vIIn1seKAlfKjnXTP4X3TlIcesMRVYL8QT2TcbTOm0OsKjOXBb4ErpdgCTYJBODB3eRkvl4oEADOQ4WcnDbX9JN9vmNrIF01d3kSXZKTDwywfd8KoCoX4l2gBOdNwC", // Only if you want to update content with the client
 });
