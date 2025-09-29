@@ -42,29 +42,62 @@ const useFirebase = () => {
     try {
       // 1. Create user in Firebase Auth
       const { email, password, name, ...otherData } = userData;
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // console.log(userData);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
-      
+
       // 2. Update display name in Firebase
       await updateProfile(user, {
         displayName: name,
       });
-      
+
       // 3. Create user document in Sanity
       const sanityUser = await client.create({
-        _type: 'user',
-        firstName: name.split(' ')[0],
-        lastName: name.split(' ').slice(1).join(' ') || '',
+        _type: "user",
+        firstName: name.split(" ")[0],
+        lastName: name.split(" ").slice(1).join(" ") || "",
         email: email,
-        phone: otherData.phone || '',
-        gender: otherData.gender || '',
-        role: 'tenant',
+        phone: otherData.phone || "",
+        gender: otherData.gender || "",
+        role: "tenant",
         isActive: true,
         createdAt: new Date().toISOString(),
         firebaseId: user.uid,
       });
-      
+
       return { user, sanityUser };
+
+      // const response = await fetch(
+      //   `https://${process.env.EXPO_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2023-06-07/data/mutate/${process.env.EXPO_PUBLIC_SANITY_DATASET}`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${process.env.EXPO_PUBLIC_SANITY_TOKEN}`,
+      //     },
+      //     body: JSON.stringify({
+      //       mutations: [
+      //         {
+      //           create: sanityUserData,
+      //         },
+      //       ],
+      //     }),
+      //   }
+      // );
+
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(
+      //     errorData.error?.description || `HTTP error! status: ${response.status}`
+      //   );
+      // }
+
+      // const result = await response.json();
+      // const documentId = result.results[0]?.id;
     } catch (error: any) {
       console.error("Error during signup:", error);
       const errorMessage = error.message || "Failed to create an account";

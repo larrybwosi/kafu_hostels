@@ -8,6 +8,7 @@
     "scheme": "kafuhostels",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
     "ios": {
       "supportsTablet": true
     },
@@ -26,9 +27,7 @@
     },
     "plugins": [
       "expo-secure-store",
-      [
-        "expo-router"
-      ],
+      ["expo-router"],
       [
         "expo-splash-screen",
         {
