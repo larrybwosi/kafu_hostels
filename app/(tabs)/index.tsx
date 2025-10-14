@@ -140,8 +140,6 @@ const CampusHostels = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
 
-  console.log('hostels');
-  // Featured hostels
   const featuredHostels = filteredHostels.filter((hostel) => hostel.featured);
   
   useEffect(() => {
