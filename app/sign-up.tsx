@@ -12,13 +12,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   Image,
   Text,
   Alert,
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Error logging utility
 const logValidationError = (step: number, errors: any[]) => {

@@ -51,6 +51,7 @@ export const FirebaseProvider: React.FC<Props> = ({ children }) => {
 
   // Fetch Sanity user data based on Firebase user ID
   const fetchSanityUser = async (firebaseId: string) => {
+    console.log('Firebase ID:', firebaseId);
     try {
       const userData = await client.fetch<SanityUser | null>(
         `*[_type == "user" && firebaseId == $uid][0]`,
@@ -85,7 +86,6 @@ export const FirebaseProvider: React.FC<Props> = ({ children }) => {
         const uid = user.uid;
         
         await fetchSanityUser(uid);
-        // ...
       } else {
       setSanityUser(null);
       setIsLoading(false);

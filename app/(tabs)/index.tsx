@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  SafeAreaView,
   StatusBar,
   ActivityIndicator,
   RefreshControl,
@@ -17,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import FeaturedHostelCard from "@/components/feature-card";
 import HostelCard from "@/components/hostel-card";
 import { Hostel, useGetAllHostels } from "@/lib/actions";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 // Filter options
 const filterOptions = {

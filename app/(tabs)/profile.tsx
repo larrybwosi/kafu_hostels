@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
   Alert,
-  SafeAreaView,
   StatusBar,
   Pressable,
   ActivityIndicator,
@@ -19,6 +18,7 @@ import { handleProfileUpdate, useGetUserData } from "@/lib/actions";
 import { formatCurrency } from "@/lib/currency";
 import { useFirebaseContext } from "@/lib/firebase.context";
 import useFirebase from "@/lib/useFirebase";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type TabType = "current" | "past";
 

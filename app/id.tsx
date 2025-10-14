@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Animated,
   StatusBar,
-  SafeAreaView,
   Linking,
   ActivityIndicator,
   Alert,
@@ -23,6 +22,7 @@ import { formatCurrency } from "@/lib/currency";
 import { useSession } from "@/lib/auth-client";
 import useFirebase from "@/lib/useFirebase";
 import { useFirebaseContext } from "@/lib/firebase.context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
